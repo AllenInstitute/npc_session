@@ -1,0 +1,115 @@
+[project]
+name = "npc_session"
+version = "0.1.0"
+description = "Interfaces for working with behavior and epyhys sessions from the Mindscope Neuropixels team, in the cloud."
+authors = [
+    {name = "Ben Hardcastle", email = "ben.hardcastle@alleninstitute.org"},
+]
+dependencies = [
+    "typing-extensions>=4.7.1",
+]
+requires-python = ">=3.9"
+readme = "README.md"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+]
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "coverage[toml]>=7.2.7",
+    "ruff>=0.0.282",
+]
+
+[tool.pdm.scripts]
+# usage: pdm run <script> [args]
+ruff = "ruff check src --fix-only"
+black = "black src"
+test = "coverage run -m pytest"
+prebuild = {composite = ["black", "ruff", "test"]}
+bump = "pdm bump -p pyproject.toml" # defaults to patch; `pdm run bump -m` to bump minor
+build = {composite = ["prebuild", "pdm build"]}
+dryrun = {composite = ["prebuild", "pdm build", "pdm publish --no-build --repository https://test.pypi.org/simple"]}
+publish = {composite = ["prebuild", "pdm build", "pdm publish --no-build"]}
+pub = {composite = ["bump", "pdm publish"]}
+
+[tool.ruff]
+fix = true
+ignore-init-module-imports = true
+# See https://github.com/charliermarsh/ruff#rules for error code definitions.
+select = [
+    "ANN", # annotations
+    "B", # bugbear
+    "C", # comprehensions
+    "E", # style errors
+    "F", # flakes
+    "I", # import sorting
+    "RUF100", # meta
+    "N", # naming
+    "U", # upgrade
+    "W", # style warnings
+    "YTT", # sys.version
+]
+extend-exclude = ["tests"]
+src = ["src", "tests"]
+target-version = "py39"
+
+[tool.black]
+target-version = ['py39']
+
+[tool.ruff.flake8-tidy-imports]
+# Disallow all relative imports.
+ban-relative-imports = "all"
+
+[tool.coverage.paths]
+source = ["src"]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+skip_covered = true
+show_missing = true
+skip_empty = true
+exclude_also = [
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+    # Don't complain if non-runnable code isn't run:
+    "if __name__ == .__main__.:",
+    # Don't complain about abstract methods, they aren't run:
+    "@(abc.)?abstractmethod",
+    "@typing.runtime_checkable",
+    ]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+    "--doctest-modules",
+    "--ignore-glob=*scripts*,*examples*",
+    "--doctest-glob=*README.md",
+]
+
+doctest_optionflags = [
+    "NORMALIZE_WHITESPACE",
+    "IGNORE_EXCEPTION_DETAIL",
+    "ELLIPSIS",
+]
+
+testpaths = [
+    ".",
+    "src",
+    "tests",
+]
