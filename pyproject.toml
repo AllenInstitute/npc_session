@@ -41,10 +41,12 @@ ruff = "ruff check src --fix-only"
 black = "black src"
 test = "pytest --cov"
 mypy = "mypy src"
-prebuild = {composite = ["black", "ruff", "test", "mypy"]}
 bump = "pdm bump micro"
-dryrun = {composite = ["prebuild", "pdm build", "pdm publish --no-build --repository https://test.pypi.org/simple"]}
-pub = {composite = ["prebuild", "pdm build", "bump", "pdm publish --no-build"]}
+prebuild = {composite = ["black", "ruff", "test", "mypy"]}
+build = {composite = ["prebuild", "pdm build"]}
+dryrun = {composite = ["build", "pdm publish --no-build --repository https://test.pypi.org/simple"]}
+pub = {composite = ["build", "bump", "pdm publish --no-build"]}
+
 
 [tool.ruff]
 fix = true
