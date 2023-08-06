@@ -22,10 +22,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
 ]
 
-[build-system]
-requires = ["setuptools>=61", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",
@@ -34,6 +30,16 @@ dev = [
     "mypy>=1.4.1",
     "pdm-bump>=0.4.0",
 ]
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"npc_sessions" = ["py.typed"]
 
 [tool.pdm.scripts]
 # usage: pdm run <script> [args]
@@ -46,7 +52,6 @@ prebuild = {composite = ["black", "ruff", "test", "mypy"]}
 build = {composite = ["prebuild", "pdm build"]}
 dryrun = {composite = ["build", "pdm publish --no-build --repository https://test.pypi.org/simple"]}
 pub = {composite = ["build", "bump", "pdm publish --no-build"]}
-
 
 [tool.ruff]
 fix = true
