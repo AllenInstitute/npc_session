@@ -1,9 +1,12 @@
 # npc_session
-**n**euro**p**ixels **c**loud **session**
 
+**n**euro**p**ixels **c**loud **session**
+	
 Interfaces for working with behavior and epyhys sessions from the
 Mindscope Neuropixels team, in the cloud.
 
+[![Python
+Versions](https://img.shields.io/pypi/pyversions/npc_sessions.svg)](https://pypi.python.org/pypi/npc-sessions/)
 ## quickstart
 
 ```bash
