@@ -1,6 +1,6 @@
 [project]
 name = "npc_session"
-version = "0.1.1"
+version = "0.1.2"
 description = "Interfaces for working with behavior and epyhys sessions from the Mindscope Neuropixels team, in the cloud."
 authors = [
     {name = "Ben Hardcastle", email = "ben.hardcastle@alleninstitute.org"},
@@ -39,7 +39,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"npc_sessions" = ["py.typed"]
+"npc_session" = ["py.typed"]
 
 [tool.pdm.scripts]
 # usage: pdm run <script> [args]
