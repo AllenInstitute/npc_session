@@ -5,7 +5,7 @@ job-queues, and types for static analysis (mypy).
 from __future__ import annotations
 
 import abc
-import collections.abc
+import datetime
 import typing
 from typing import Mapping, Protocol, TypeVar, Union
 
@@ -33,6 +33,9 @@ class Job(Protocol):
     """Base class for jobs. The only required attribute is `session`, to
     match a job with a session. All other fields can be set to None."""
 
+    def __init__(self, session: npc_session.SessionRecord, **kwargs: JobArgs) -> None:
+        """Create a new job."""
+
     @property
     @abc.abstractmethod
     def session(self) -> str | npc_session.SessionRecord:
@@ -52,7 +55,7 @@ class Job(Protocol):
 
     @property
     @abc.abstractmethod
-    def added(self) -> None | int | float:
+    def added(self) -> None | datetime.datetime:
         """
         When the job was added to the queue.
         Jobs processed in ascending order (after ordering by `priority`).
@@ -60,7 +63,7 @@ class Job(Protocol):
 
     @property
     @abc.abstractmethod
-    def started(self) -> None | int | float:
+    def started(self) -> None | datetime.datetime:
         """Whether the job has started (can also represent time)."""
 
     @property
@@ -74,8 +77,10 @@ class Job(Protocol):
 
     @property
     @abc.abstractmethod
-    def finished(self) -> None | int | float:
-        """Whether the session has been verified as finished."""
+    def finished(self) -> None | datetime.datetime:
+        """Whether the session has been verified as finished (can also
+        represent time).
+        """
 
     @property
     @abc.abstractmethod
@@ -85,67 +90,43 @@ class Job(Protocol):
 
 @typing.runtime_checkable
 class JobQueue(Protocol):
-    """Base class for job queues."""
+    """Base class for job queues.
+
+    Implementations should subclass `collections.abc.MutableMapping`
+    to get methods like items, keys, get, setdefault, etc.    
+    """
 
     @abc.abstractmethod
-    def __setitem__(
-        self, session_or_job: npc_session.SessionRecord | Job, value: Job
-    ) -> None:
+    def __setitem__(self, key: npc_session.SessionRecord, value: Job) -> None:
         """Add a job to the queue."""
 
     @abc.abstractmethod
-    def __getitem__(self, session_or_job: npc_session.SessionRecord | Job) -> Job:
+    def __getitem__(self, key: npc_session.SessionRecord) -> Job:
         """Get a job from the queue."""
 
     @abc.abstractmethod
-    def __delitem__(self, session_or_job: npc_session.SessionRecord | Job) -> None:
+    def __delitem__(self, key: npc_session.SessionRecord) -> None:
         """Remove a job from the queue."""
 
     @abc.abstractmethod
-    def __contains__(self, session_or_job: npc_session.SessionRecord | Job) -> bool:
-        """Whether the session or job is in the queue."""
+    def __contains__(self, key: npc_session.SessionRecord) -> bool:
+        """Whether the session is in the queue."""
 
     @abc.abstractmethod
     def __len__(self) -> int:
         """Number of jobs in the queue."""
 
     @abc.abstractmethod
-    def __iter__(self) -> collections.abc.Iterator[Job]:
-        """Iterate over the jobs in the queue.
+    def __iter__(self) -> Job:
+        """Iterate over all jobs in the queue."""
+
+    @abc.abstractmethod
+    def __next__(self) -> Job:
+        """Get the next job to process.
         Sorted by priority (desc), then date added (asc).
         """
 
     @abc.abstractmethod
-    def add_or_update(
-        self, session_or_job: npc_session.SessionRecord | Job, **kwargs: JobArgs
-    ) -> None:
-        """Add an entry to the queue or update the existing entry."""
-
-    @abc.abstractmethod
-    def next(self) -> Job | None:
-        """
-        Get the next job to process.
-        Sorted by priority (desc), then date added (asc).
-        """
-
-    @abc.abstractmethod
-    def set_finished(self, session_or_job: npc_session.SessionRecord | Job) -> None:
-        """Mark a job as finished. May be irreversible, so be sure."""
-
-    @abc.abstractmethod
-    def set_started(self, session_or_job: npc_session.SessionRecord | Job) -> None:
-        """Mark a job as being processed. Reversible"""
-
-    @abc.abstractmethod
-    def set_queued(self, session_or_job: npc_session.SessionRecord | Job) -> None:
-        """Mark a job as requiring processing, undoing `set_started`."""
-
-    @abc.abstractmethod
-    def set_errored(
-        self, session_or_job: npc_session.SessionRecord | Job, error: str | Exception
-    ) -> None:
-        """Mark a job as having errored."""
-
-    @abc.abstractmethod
-    def is_started(self, session_or_job: npc_session.SessionRecord | Job) -> bool:
-        """Whether the job has started processing, but not yet finished."""
+    def update(self, key: npc_session.SessionRecord, **kwargs: JobArgs) -> None:
+        """Update the fields on an existing entry."""
+            
