@@ -3,17 +3,15 @@ name = "npc_session"
 version = "0.1.2"
 description = "Interfaces for working with behavior and epyhys sessions from the Mindscope Neuropixels team, in the cloud."
 authors = [
-    {name = "Ben Hardcastle", email = "ben.hardcastle@alleninstitute.org"},
+    { name = "Ben Hardcastle", email = "ben.hardcastle@alleninstitute.org" },
 ]
 dependencies = [
     "typing-extensions>=4.7.1",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 readme = "README.md"
-license = {text = "MIT"}
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -22,86 +20,129 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
 ]
 
+[project.license]
+text = "MIT"
+
+[project.urls]
+Repository = "https://github.com/AllenInstitute/npc_session"
+Issues = "https://github.com/AllenInstitute/npc_session/issues"
+
 [project.optional-dependencies]
 dev = [
+    "pdm>=2.0",
     "pytest>=7.4.0",
     "ruff>=0.0.282",
     "pytest-cov>=4.1.0",
     "mypy>=1.4.1",
-    "pdm-bump>=0.4.0",
+    "pdm-bump>=0.7.3",
 ]
 
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = [
+    "setuptools>=61",
+    "wheel",
+]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = [
+    "src",
+]
 
 [tool.setuptools.package-data]
-"npc_session" = ["py.typed"]
+npc_session = [
+    "py.typed",
+]
 
 [tool.pdm.scripts]
-# usage: pdm run <script> [args]
 ruff = "ruff check src --fix-only"
 black = "black src"
 test = "pytest --cov"
 mypy = "mypy src"
 bump = "pdm bump micro"
-prebuild = {composite = ["black", "ruff", "test", "mypy"]}
-build = {composite = ["prebuild", "pdm build"]}
-dryrun = {composite = ["build", "pdm publish --no-build --repository https://test.pypi.org/simple"]}
-pub = {composite = ["build", "bump", "pdm publish --no-build"]}
+
+[tool.pdm.scripts.prebuild]
+composite = [
+    "black",
+    "ruff",
+    "test",
+    "mypy",
+]
+
+[tool.pdm.scripts.build]
+composite = [
+    "prebuild",
+    "pdm build",
+]
+
+[tool.pdm.scripts.dryrun]
+composite = [
+    "build",
+    "pdm publish --no-build --repository https://test.pypi.org/simple",
+]
+
+[tool.pdm.scripts.pub]
+composite = [
+    "build",
+    "bump",
+    "pdm publish --no-build",
+]
 
 [tool.ruff]
 fix = true
 ignore-init-module-imports = true
-# See https://github.com/charliermarsh/ruff#rules for error code definitions.
 select = [
-    "ANN", # annotations
-    "B", # bugbear
-    "C", # comprehensions
-    "E", # style errors
-    "F", # flakes
-    "I", # import sorting
-    "RUF100", # meta
-    "N", # naming
-    "U", # upgrade
-    "W", # style warnings
-    "YTT", # sys.version
+    "ANN",
+    "B",
+    "C",
+    "E",
+    "F",
+    "I",
+    "RUF100",
+    "N",
+    "U",
+    "W",
+    "YTT",
 ]
-extend-exclude = ["tests"]
-src = ["src", "tests"]
+extend-exclude = [
+    "tests",
+]
+src = [
+    "src",
+    "tests",
+]
 target-version = "py38"
 
-[tool.black]
-target-version = ['py38']
-
 [tool.ruff.flake8-tidy-imports]
-# Disallow all relative imports.
 ban-relative-imports = "all"
 
+[tool.black]
+target-version = [
+    "py38",
+]
+
 [tool.coverage.paths]
-source = ["src"]
+source = [
+    "src",
+]
 
 [tool.coverage.run]
 branch = true
-source = ["src"]
+source = [
+    "src",
+]
 
 [tool.coverage.report]
 skip_covered = true
 show_missing = true
 skip_empty = true
 exclude_also = [
-    # Don't complain if tests don't hit defensive assertion code:
     "raise AssertionError",
     "raise NotImplementedError",
-    # Don't complain if non-runnable code isn't run:
     "if __name__ == .__main__.:",
-    # Don't complain about abstract methods, they aren't run:
     "@(abc.)?abstractmethod",
     "@typing.runtime_checkable",
-    ]
+]
 
 [tool.pytest.ini_options]
 addopts = [
@@ -110,13 +151,11 @@ addopts = [
     "--ignore-glob=*scripts*,*examples*",
     "--doctest-glob=*README.md",
 ]
-
 doctest_optionflags = [
     "NORMALIZE_WHITESPACE",
     "IGNORE_EXCEPTION_DETAIL",
     "ELLIPSIS",
 ]
-
 testpaths = [
     ".",
     "src",
