@@ -93,7 +93,7 @@ class JobQueue(Protocol):
     """Base class for job queues.
 
     Implementations should subclass `collections.abc.MutableMapping`
-    to get methods like items, keys, get, setdefault, etc.    
+    to get methods like items, keys, get, setdefault, etc.
     """
 
     @abc.abstractmethod
@@ -129,4 +129,3 @@ class JobQueue(Protocol):
     @abc.abstractmethod
     def update(self, key: npc_session.SessionRecord, **kwargs: JobArgs) -> None:
         """Update the fields on an existing entry."""
-            
