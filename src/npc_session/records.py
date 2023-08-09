@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import re
 import typing
-from typing import Any, ClassVar, Protocol, TypeAlias, TypeVar, Union
+from typing import Any, ClassVar, Protocol, TypeVar
 
 import npc_session.parsing as parsing
 
@@ -61,18 +61,18 @@ class MetadataRecord:
 
     valid_id_regex: ClassVar[str] = r"[0-9-_: ]+"
 
-    def __init__(self, value: str | int) -> None:
+    def __init__(self, value: int | str) -> None:
         self.id = value
 
     @classmethod
-    def parse_id(cls, value: str | int) -> str | int:
+    def parse_id(cls, value: Any) -> int | str:
         """Pre-validation. Handle any parsing or casting to get to the stored type."""
         if isinstance(value, (SupportsID,)):
             value = value.id
         return value
 
     @classmethod
-    def validate_id(cls, value: str | int) -> None:  # pragma: no cover
+    def validate_id(cls, value: Any) -> None:  # pragma: no cover
         """Post-parsing. Raise ValueError if not a valid value for this type of metadata record."""
         if isinstance(value, int):
             if value < 0:
@@ -93,7 +93,7 @@ class MetadataRecord:
         return self._id
 
     @id.setter
-    def id(self, value: str | int) -> None:
+    def id(self, value: int | str) -> None:
         """A unique identifier for the object.
         Write-once, then read-only. Type at assignment is preserved.
         """
@@ -165,7 +165,7 @@ class SubjectRecord(MetadataRecord):
     """
 
     @classmethod
-    def parse_id(cls, value: Any) -> int:
+    def parse_id(cls, value: int | str) -> int:
         return int(super().parse_id(int(str(value))))
 
 
@@ -185,8 +185,6 @@ class DateRecord(StrRecord):
     (2022, 4, 25)
     """
 
-    id_input: TypeAlias = Union[int, str, datetime.date]
-
     valid_id_regex: ClassVar[str] = parsing.VALID_DATE
     """A valid date this century, format YYYY-MM-DD."""
 
@@ -195,7 +193,7 @@ class DateRecord(StrRecord):
         return datetime.date.fromisoformat(self.id)
 
     @classmethod
-    def parse_id(cls, value: id_input) -> str:
+    def parse_id(cls, value: int | str | datetime.datetime) -> str:
         date = parsing.extract_isoformat_date(str(value))
         if date is None:
             raise ValueError(
@@ -204,7 +202,7 @@ class DateRecord(StrRecord):
         return str(super().parse_id(date))
 
     @classmethod
-    def validate_id(cls, value) -> None:
+    def validate_id(cls, value: str) -> None:
         """
         >>> DateRecord.validate_id('2002-04-25')
         Traceback (most recent call last):
@@ -225,7 +223,7 @@ class DateRecord(StrRecord):
 
 class DatetimeRecord(DateRecord):
     """Datetime records are stored in isoformat with a resolution of seconds,
-    and space separator between date/time, hypen between date components, colon
+    and space separator between date/time, hyphen between date components, colon
     between time components.
 
     >>> dt = DatetimeRecord('2022-04-25 15:02:37')
@@ -250,7 +248,7 @@ class DatetimeRecord(DateRecord):
         return datetime.datetime.fromisoformat(self.id)
 
     @classmethod
-    def parse_id(cls, value) -> str:
+    def parse_id(cls, value: int | str | datetime.datetime) -> str:
         date = super().parse_id(value)
         time = parsing.extract_isoformat_time(str(value))
         return f"{date} {time}"
@@ -345,7 +343,6 @@ class SessionRecord(StrRecord):
     """
 
     id: str
-    id_input: TypeAlias = str
 
     valid_id_regex: ClassVar = parsing.VALID_SESSION_ID
 
@@ -354,7 +351,7 @@ class SessionRecord(StrRecord):
     False as long as each subject has only one session per day."""
 
     @classmethod
-    def parse_id(cls, value) -> str:
+    def parse_id(cls, value: Any) -> str:
         value = parsing.extract_session_id(str(value), include_null_index=True)
         split = value.split("_")
         if len(split) < 3:
