@@ -71,7 +71,7 @@ composite = [
 
 [tool.pdm.scripts.dryrun]
 composite = [
-    "build",
+    "prebuild",
     "pdm publish --repository testpypi",
 ]
 
