@@ -47,7 +47,7 @@ jobs:
         
     - name: Tag commit
       run: |
-        pdm tag
+        pdm bump tag
         
     - name: Commit and Push version bump
       uses: EndBug/add-and-commit@v9
