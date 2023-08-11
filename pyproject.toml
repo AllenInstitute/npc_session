@@ -1,6 +1,6 @@
 [project]
 name = "npc_session"
-version = "0.1.7"
+version = "0.1.8"
 description = "Interfaces for working with behavior and epyhys sessions from the Mindscope Neuropixels team, in the cloud."
 authors = [
     { name = "Ben Hardcastle", email = "ben.hardcastle@alleninstitute.org" },
@@ -37,23 +37,6 @@ dev = [
     "pdm-bump>=0.7.3",
 ]
 
-[build-system]
-requires = [
-    "setuptools>=61",
-    "wheel",
-]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-where = [
-    "src",
-]
-
-[tool.setuptools.package-data]
-npc_session = [
-    "py.typed",
-]
-
 [tool.pdm.scripts]
 ruff = "ruff check src --fix-only"
 black = "black src"
@@ -81,6 +64,16 @@ composite = [
     "prebuild",
     "bumpver",
     "pdm publish",
+]
+
+[tool.setuptools.packages.find]
+where = [
+    "src",
+]
+
+[tool.setuptools.package-data]
+npc_session = [
+    "py.typed",
 ]
 
 [tool.ruff]
@@ -156,3 +149,10 @@ testpaths = [
     "src",
     "tests",
 ]
+
+[build-system]
+requires = [
+    "setuptools>=61",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
