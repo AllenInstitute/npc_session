@@ -69,23 +69,17 @@ composite = [
     "mypy",
 ]
 
-[tool.pdm.scripts.build]
-composite = [
-    "prebuild",
-    "pdm build",
-]
-
 [tool.pdm.scripts.dryrun]
 composite = [
     "build",
-    "pdm publish --no-build --repository https://test.pypi.org/simple",
+    "pdm publish --repository testpypi",
 ]
 
 [tool.pdm.scripts.pub]
 composite = [
-    "build",
+    "prebuild",
     "bump",
-    "pdm publish --no-build",
+    "pdm publish",
 ]
 
 [tool.ruff]
