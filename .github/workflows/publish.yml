@@ -55,11 +55,9 @@ jobs:
         message: "Bump [skip actions]"
         
     - name: Tag commit
-      id: tag_version
-      uses: mathieudutour/github-tag-action@v6.1
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        release_branches: main
+      run: |
+        pdm tag
+        git push --tags
         
     - name: Publish
       run: |
