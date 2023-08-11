@@ -17,8 +17,7 @@ jobs:
       fail-fast: true
       matrix:
         python-version: ["3.9"]
-    permissions:
-      id-token: write
+    permissions: write-all
       
     steps:
     - uses: actions/checkout@v3
