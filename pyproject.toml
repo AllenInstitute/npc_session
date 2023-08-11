@@ -27,11 +27,6 @@ text = "MIT"
 Repository = "https://github.com/AllenInstitute/npc_session"
 Issues = "https://github.com/AllenInstitute/npc_session/issues"
 
-[tool.pdm]
-plugins = [
-    "pdm-bump"
-]
-
 [tool.pdm.dev-dependencies]
 dev = [
     "pytest>=7.4.0",
@@ -39,6 +34,7 @@ dev = [
     "pytest-cov>=4.1.0",
     "black>=23.7.0",
     "ruff>=0.0.282",
+    "pdm-bump",
 ]
 
 [tool.pdm.scripts]
