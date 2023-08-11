@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 
 ID = r"^(_?[a-zA-Z0-9-:]_?)+$"
