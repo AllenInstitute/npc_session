@@ -15,12 +15,12 @@ MINUTE = r"([0-5][0-9])"
 SECOND = r"([0-5][0-9])"
 SUBSECOND = r"([0-9]{1,6})"
 TIME_SEP = r"[-:.]?"
-TIME = rf"{HOUR}{TIME_SEP}{MINUTE}{TIME_SEP}{SECOND}(\.{SUBSECOND})?"
+PARSE_TIME = rf"{HOUR}{TIME_SEP}{MINUTE}{TIME_SEP}{SECOND}(\.{SUBSECOND})?"
 # avoid parsing time alone without a preceding date:
 # if seperators not present will falsely match 8-digit numbers with low values
 
-PARSE_DATETIME = rf"{PARSE_DATE}\D{TIME}"
-PARSE_DATE_OPTIONAL_TIME = rf"{PARSE_DATE}(\D{TIME})?"
+PARSE_DATETIME = rf"{PARSE_DATE}\D{PARSE_TIME}"
+PARSE_DATE_OPTIONAL_TIME = rf"{PARSE_DATE}(\D{PARSE_TIME})?"
 
 SUBJECT = r"([0-9]{6,7})"
 PARSE_SUBJECT = rf"(?<![0-9]){SUBJECT}(?![0-9])"
@@ -69,13 +69,19 @@ def extract_isoformat_time(s: str) -> str | None:
     '10:12:03'
     >>> extract_isoformat_time('20210601_101203')
     '10:12:03'
+    >>> extract_isoformat_time('101203')
+    '10:12:03'
     >>> extract_isoformat_time('20209900_251203') == None
     True
     """
     match = re.search(PARSE_DATETIME, s)
-    if not match:
-        return None
-    value = re.sub(PARSE_DATE, "", match.group(0))
+    if match:
+        value = re.sub(PARSE_DATE, "", match.group(0))
+    else:
+        match = re.search(PARSE_TIME, s)
+        if not match:
+            return None
+        value = match.group(0)
     value = strip_non_numeric(value)
     return value[:2] + ":" + value[2:4] + ":" + value[4:6]
 

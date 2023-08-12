@@ -258,6 +258,54 @@ class DatetimeRecord(DateRecord):
             return self.dt.__getattribute__(__name)
         return super().__getattribute__(__name)
 
+class TimeRecord(StrRecord):
+    """Time records are stored in isoformat with a resolution of seconds.
+
+    >>> TimeRecord('15:02:37')
+    '15:02:37'
+    >>> TimeRecord('15:02:37.123') == TimeRecord(150237)
+    True
+    >>> TimeRecord('25:02:37')
+    Traceback (most recent call last):
+    ...
+    ValueError: Invalid time: 25:02:37
+    """
+
+    valid_id_regex: ClassVar[str] = parsing.VALID_TIME
+    """A valid time, format HH:MM:SS"""
+
+    @property
+    def dt(self) -> datetime.time:  
+        return datetime.time.fromisoformat(self.id)
+    
+    @classmethod
+    def parse_id(cls, value: int | str | datetime.datetime) -> str:
+        time = parsing.extract_isoformat_time(str(value))
+        if time is None:
+            raise ValueError(
+                f"{cls.__name__} requires a time HH:MM:SS with optional separators, not {value!r}"
+            )
+        return time
+
+    @classmethod
+    def validate_id(cls, value: str) -> None:
+        """
+        >>> TimeRecord.validate_id('15:02:37')
+        >>> TimeRecord.validate_id('15:02:37.123456')
+        >>> TimeRecord.validate_id('25:02:37.123456')
+        Traceback (most recent call last):
+        ...
+        ValueError: Invalid time: 25:02:37.123
+        """
+        try:
+            datetime.time.fromisoformat(value)
+        except ValueError as exc:
+            raise ValueError(f"Invalid time: {value}") from exc
+
+    def __getattribute__(self, __name: str) -> Any:
+        if __name in ("hour", "minute", "second", "resolution"):
+            return self.dt.__getattribute__(__name)
+        return super().__getattribute__(__name)
 
 class SessionRecord(StrRecord):
     """To uniquely define a subject we need:
