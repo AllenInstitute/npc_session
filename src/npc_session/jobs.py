@@ -7,7 +7,8 @@ from __future__ import annotations
 import abc
 import datetime
 import typing
-from typing import Mapping, Protocol, TypeVar, Union
+from collections.abc import Mapping
+from typing import Protocol, TypeVar, Union
 
 from typing_extensions import TypeAlias
 
