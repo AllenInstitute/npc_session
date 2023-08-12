@@ -44,6 +44,7 @@ def _strip_non_numeric(s: str) -> str:
     """
     return re.sub("[^0-9]", "", s)
 
+
 def extract_isoformat_datetime(s: str) -> str | None:
     """Extract and normalize datetime from a string.
     Return None if no datetime found.
@@ -70,6 +71,7 @@ def extract_isoformat_datetime(s: str) -> str | None:
         + ":"
         + value[12:14]
     )
+
 
 def extract_isoformat_date(s: str) -> str | None:
     """Extract and normalize date from a string.

@@ -258,6 +258,7 @@ class DatetimeRecord(DateRecord):
             return self.dt.__getattribute__(__name)
         return super().__getattribute__(__name)
 
+
 class TimeRecord(StrRecord):
     """Time records are stored in isoformat with a resolution of seconds.
 
@@ -275,9 +276,9 @@ class TimeRecord(StrRecord):
     """A valid time, format HH:MM:SS"""
 
     @property
-    def dt(self) -> datetime.time:  
+    def dt(self) -> datetime.time:
         return datetime.time.fromisoformat(self.id)
-    
+
     @classmethod
     def parse_id(cls, value: int | str | datetime.datetime) -> str:
         time = parsing.extract_isoformat_time(str(value))
@@ -306,6 +307,7 @@ class TimeRecord(StrRecord):
         if __name in ("hour", "minute", "second", "resolution"):
             return self.dt.__getattribute__(__name)
         return super().__getattribute__(__name)
+
 
 class SessionRecord(StrRecord):
     """To uniquely define a subject we need:
