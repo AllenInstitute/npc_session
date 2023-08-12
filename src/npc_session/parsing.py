@@ -36,14 +36,40 @@ VALID_SESSION_ID = (
 )
 
 
-def strip_non_numeric(s: str) -> str:
+def _strip_non_numeric(s: str) -> str:
     """Remove all non-numeric characters from a string.
 
-    >>> strip_non_numeric('2021-06-01_10:12/34.0')
+    >>> _strip_non_numeric('2021-06-01_10:12/34.0')
     '202106011012340'
     """
     return re.sub("[^0-9]", "", s)
 
+def extract_isoformat_datetime(s: str) -> str | None:
+    """Extract and normalize datetime from a string.
+    Return None if no datetime found.
+
+    >>> extract_isoformat_datetime('2021-06-01_10:12:03')
+    '2021-06-01 10:12:03'
+    >>> extract_isoformat_datetime('20210601_101203')
+    '2021-06-01 10:12:03'
+    """
+    match = re.search(PARSE_DATETIME, str(s))
+    if not match:
+        return None
+    value = _strip_non_numeric(match.group(0))
+    return (
+        value[:4]
+        + "-"
+        + value[4:6]
+        + "-"
+        + value[6:8]
+        + " "
+        + value[8:10]
+        + ":"
+        + value[10:12]
+        + ":"
+        + value[12:14]
+    )
 
 def extract_isoformat_date(s: str) -> str | None:
     """Extract and normalize date from a string.
@@ -53,11 +79,17 @@ def extract_isoformat_date(s: str) -> str | None:
     '2021-06-01'
     >>> extract_isoformat_date('20210601_100000')
     '2021-06-01'
+    >>> extract_isoformat_date(20210601)
+    '2021-06-01'
     """
-    match = re.search(PARSE_DATE, s)
+    # matching datetime is more reliable than date alone:
+    dt = extract_isoformat_datetime(str(s))
+    if dt:
+        return dt[:10]
+    match = re.search(PARSE_DATE, str(s))
     if not match:
         return None
-    value = strip_non_numeric(match.group(0))
+    value = _strip_non_numeric(match.group(0))
     return value[:4] + "-" + value[4:6] + "-" + value[6:8]
 
 
@@ -74,15 +106,16 @@ def extract_isoformat_time(s: str) -> str | None:
     >>> extract_isoformat_time('20209900_251203') == None
     True
     """
-    match = re.search(PARSE_DATETIME, s)
+    # matching datetime is more reliable than time alone:
+    match = re.search(PARSE_DATETIME, str(s))
     if match:
         value = re.sub(PARSE_DATE, "", match.group(0))
     else:
-        match = re.search(PARSE_TIME, s)
+        match = re.search(PARSE_TIME, str(s))
         if not match:
             return None
         value = match.group(0)
-    value = strip_non_numeric(value)
+    value = _strip_non_numeric(value)
     return value[:2] + ":" + value[2:4] + ":" + value[4:6]
 
 
@@ -104,7 +137,7 @@ def extract_subject(s: str) -> int | None:
     match = re.search(PARSE_SUBJECT, s)
     if not match:
         return None
-    return int(strip_non_numeric(match.group(0)))
+    return int(_strip_non_numeric(match.group(0)))
 
 
 def extract_session_index(s: str) -> int | None:
