@@ -15,12 +15,12 @@ MINUTE = r"([0-5][0-9])"
 SECOND = r"([0-5][0-9])"
 SUBSECOND = r"([0-9]{1,6})"
 TIME_SEP = r"[-:.]?"
-_TIME = rf"{HOUR}{TIME_SEP}{MINUTE}{TIME_SEP}{SECOND}(\.{SUBSECOND})?"
+TIME = rf"{HOUR}{TIME_SEP}{MINUTE}{TIME_SEP}{SECOND}(\.{SUBSECOND})?"
 # avoid parsing time alone without a preceding date:
 # if seperators not present will falsely match 8-digit numbers with low values
 
-PARSE_DATETIME = rf"{PARSE_DATE}\D{_TIME}"
-PARSE_DATE_OPTIONAL_TIME = rf"{PARSE_DATE}(\D{_TIME})?"
+PARSE_DATETIME = rf"{PARSE_DATE}\D{TIME}"
+PARSE_DATE_OPTIONAL_TIME = rf"{PARSE_DATE}(\D{TIME})?"
 
 SUBJECT = r"([0-9]{6,7})"
 PARSE_SUBJECT = rf"(?<![0-9]){SUBJECT}(?![0-9])"
