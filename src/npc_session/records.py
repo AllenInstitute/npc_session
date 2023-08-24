@@ -244,7 +244,7 @@ class DatetimeRecord(DateRecord):
     """A valid datetime this century, format YYYY-MM-DD HH:MM:SS"""
 
     @property
-    def dt(self) -> datetime.date:
+    def dt(self) -> datetime.datetime:
         return datetime.datetime.fromisoformat(self.id)
 
     @classmethod
