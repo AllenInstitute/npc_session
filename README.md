@@ -5,8 +5,14 @@
 Basic tools for parsing subject, session, date and time associated with data from the
 Mindscope Neuropixels team, in the cloud.
 
-[![Python
-Versions](https://img.shields.io/pypi/pyversions/npc_session.svg)](https://pypi.python.org/pypi/npc-session/)
+[![PyPI](https://img.shields.io/pypi/v/npc-session.svg?label=PyPI&color=blue)](https://pypi.org/project/npc-session/)
+[![Python version](https://img.shields.io/pypi/pyversions/npc-session)](https://pypi.org/project/npc-session/)
+
+[![Coverage](https://img.shields.io/codecov/c/github/alleninstitute/npc_session?logo=codecov)](https://app.codecov.io/github/AllenInstitute/npc_session)
+[![CI/CD](https://img.shields.io/github/actions/workflow/status/alleninstitute/npc_session/publish.yml?label=CI/CD&logo=github)](https://github.com/alleninstitute/npc_session/actions/workflows/publish.yml)
+[![GitHub issues](https://img.shields.io/github/issues/alleninstitute/npc_session?logo=github)](https://github.com/alleninstitute/npc_session/issues)
+
+
 ## quickstart
 
 ```bash
