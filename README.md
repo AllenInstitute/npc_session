@@ -1,8 +1,8 @@
 # npc_session
 
 **n**euro**p**ixels **c**loud **session**
-	
-Interfaces for working with behavior and epyhys sessions from the
+
+Basic tools for parsing subject, session, date and time associated with data from the
 Mindscope Neuropixels team, in the cloud.
 
 [![Python
