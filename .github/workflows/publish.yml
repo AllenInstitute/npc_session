@@ -48,8 +48,8 @@ jobs:
       run: |
         pdm bumpver
         
-        - name: Publish
-        run: |
+    - name: Publish
+      run: |
         pdm publish
         
     - name: Commit changes
