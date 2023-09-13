@@ -34,7 +34,11 @@ dev = [
     "pytest-cov>=4.1.0",
     "black>=23.7.0",
     "ruff>=0.0.282",
-    "pdm-bump>=0.7.3",
+]
+
+[tool.pdm]
+plugins = [
+    "pdm-bump",
 ]
 
 [tool.pdm.scripts]
@@ -62,6 +66,7 @@ composite = [
 [tool.pdm.scripts.pub]
 composite = [
     "prebuild",
+    "pdm install --plugins",
     "bumpver",
     "pdm publish",
 ]
