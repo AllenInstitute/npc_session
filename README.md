@@ -19,7 +19,7 @@ Mindscope Neuropixels team, in the cloud.
 pip install npc_session
 ```
 
-Parse a normalized IDs from a path or string:
+Parse a normalized ID from a path or string:
 ```python
 >>> from npc_session import SessionRecord;
 
