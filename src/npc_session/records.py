@@ -168,7 +168,28 @@ class SubjectRecord(MetadataRecord):
     def parse_id(cls, value: int | str) -> int:
         return int(super().parse_id(int(str(value))))
 
-
+class ProbeRecord(StrRecord):
+    """Probe records stored as `probeA` where letter is A-F
+    >>> ProbeRecord('probeA')
+    'probeA'
+    >>> ProbeRecord('testB Probe A2 sessionC')
+    'probeA'
+    >>> ProbeRecord('366122_2021-06-01_10:12:03_3')
+    Traceback (most recent call last):
+    ...
+    ValueError: ProbeRecord requires a string containing `probe` followed by a letter A-F, not '366122_2021-06-01_10:12:03_3'
+    """
+    valid_id_regex: ClassVar[str] = parsing.VALID_PROBE_NAME
+    
+    @classmethod
+    def parse_id(cls, value: str) -> str:
+        letter = parsing.extract_probe_letter(str(value))
+        if letter is None:
+            raise ValueError(
+                f"{cls.__name__} requires a string containing `probe` followed by a letter A-F, not {value!r}"
+            )
+        return f'probe{letter}'
+        
 class DateRecord(StrRecord):
     """Date records are stored in isoformat with hyphen seperators.
 
