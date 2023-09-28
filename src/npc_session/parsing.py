@@ -38,6 +38,7 @@ VALID_SESSION_ID = (
 )
 VALID_PROBE_NAME = r"^probe[A-F]{1}$"
 
+
 def _strip_non_numeric(s: str) -> str:
     """Remove all non-numeric characters from a string.
 
@@ -45,6 +46,7 @@ def _strip_non_numeric(s: str) -> str:
     '202106011012340'
     """
     return re.sub("[^0-9]", "", s)
+
 
 def extract_probe_letter(s: str) -> str | None:
     """
@@ -59,6 +61,7 @@ def extract_probe_letter(s: str) -> str | None:
     """
     match = re.search(PARSE_PROBE_LETTER, s)
     return match.group(1) if match else None
+
 
 def extract_isoformat_datetime(s: str) -> str | None:
     """Extract and normalize datetime from a string.
