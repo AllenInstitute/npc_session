@@ -63,13 +63,13 @@ composite = [
 
 [tool.pdm.scripts.bumpver]
 composite = [
-    "pdm install --plugins",
+    "pdm self add pdm-bump",
     "pdm run bump micro",
 ]
 
 [tool.pdm.scripts.tag]
 composite = [
-    "pdm install --plugins",
+    "pdm self add pdm-bump",
     "pdm run bump tag",
 ]
 
