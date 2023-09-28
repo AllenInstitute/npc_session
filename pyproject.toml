@@ -64,13 +64,13 @@ composite = [
 [tool.pdm.scripts.bumpver]
 composite = [
     "pdm self add pdm-bump",
-    "pdm run bump micro",
+    "pdm bump micro",
 ]
 
 [tool.pdm.scripts.tag]
 composite = [
     "pdm self add pdm-bump",
-    "pdm run bump tag",
+    "pdm bump tag",
 ]
 
 
