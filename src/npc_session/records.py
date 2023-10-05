@@ -202,13 +202,12 @@ class ProbeRecord(StrRecord):
     def letter(self) -> str:
         return self.id[-1]
 
-
     def __eq__(self, other):
         if str(self) == str(other) or str(self.letter) == str(other):
             return True
         return False
-    
-    
+
+
 class DateRecord(StrRecord):
     """Date records are stored in isoformat with hyphen seperators.
 
