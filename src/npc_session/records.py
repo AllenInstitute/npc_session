@@ -171,7 +171,7 @@ class SubjectRecord(MetadataRecord):
 
 class ProbeRecord(StrRecord):
     """Probe records stored as A-F
-    
+
     >>> ProbeRecord('A')
     'A'
     >>> ProbeRecord('A').name
@@ -194,7 +194,6 @@ class ProbeRecord(StrRecord):
 
     valid_id_regex: ClassVar[str] = parsing.VALID_PROBE_LETTER
 
-
     @classmethod
     def parse_id(cls, value: str) -> str:
         letter = parsing.extract_probe_letter(str(value))
@@ -216,6 +215,7 @@ class ProbeRecord(StrRecord):
 
     def __hash__(self) -> int:
         return hash(self.id)
+
 
 class DateRecord(StrRecord):
     """Date records are stored in isoformat with hyphen seperators.
