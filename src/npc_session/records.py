@@ -196,7 +196,7 @@ class ProbeRecord(StrRecord):
             raise ValueError(
                 f"{cls.__name__} requires a string containing `probe` followed by a letter A-F, not {value!r}"
             )
-        return f"probe{letter}"
+        return str(super().parse_id(f"probe{letter}"))
 
     @property
     def letter(self) -> str:
