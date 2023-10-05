@@ -173,6 +173,8 @@ class ProbeRecord(StrRecord):
     """Probe records stored as `probeA` where letter is A-F
     >>> ProbeRecord('probeA')
     'probeA'
+    >>> ProbeRecord('probeA').letter
+    'A'
     >>> ProbeRecord('testB Probe A2 sessionC')
     'probeA'
     >>> ProbeRecord('366122_2021-06-01_10:12:03_3')
@@ -192,6 +194,9 @@ class ProbeRecord(StrRecord):
             )
         return f"probe{letter}"
 
+    @property
+    def letter(self) -> str:
+        return self.id[-1]
 
 class DateRecord(StrRecord):
     """Date records are stored in isoformat with hyphen seperators.
