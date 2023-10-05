@@ -9,16 +9,16 @@ import re
 
 PARSE_PROBE_LETTER = r"(?<=[pP{1}]robe)[-_\s]*(?P<letter>[A-F]{1})(?![a-zA-Z])"
 
-YEAR = r"(20[1-2][0-9])"
-MONTH = r"(0[1-9]|10|11|12)"
-DAY = r"(0[1-9]|[1-2][0-9]|3[0-1])"
+YEAR = r"(?P<year>20[1-2][0-9])"
+MONTH = r"(?P<month>0[1-9]|10|11|12)"
+DAY = r"(?P<day>0[1-9]|[1-2][0-9]|3[0-1])"
 DATE_SEP = r"[-/]?"
 PARSE_DATE = rf"{YEAR}{DATE_SEP}{MONTH}{DATE_SEP}{DAY}"
 
-HOUR = r"([0-1][0-9]|[2][0-3])"
-MINUTE = r"([0-5][0-9])"
-SECOND = r"([0-5][0-9])"
-SUBSECOND = r"([0-9]{1,6})"
+HOUR = r"(?P<hour>[0-1][0-9]|[2][0-3])"
+MINUTE = r"(?P<minute>[0-5][0-9])"
+SECOND = r"(?P<second>[0-5][0-9])"
+SUBSECOND = r"(?P<subsecond>[0-9]{1,6})"
 TIME_SEP = r"[-:.]?"
 PARSE_TIME = rf"{HOUR}{TIME_SEP}{MINUTE}{TIME_SEP}{SECOND}(\.{SUBSECOND})?"
 # avoid parsing time alone without a preceding date:
@@ -27,9 +27,9 @@ PARSE_TIME = rf"{HOUR}{TIME_SEP}{MINUTE}{TIME_SEP}{SECOND}(\.{SUBSECOND})?"
 PARSE_DATETIME = rf"{PARSE_DATE}\D{PARSE_TIME}"
 PARSE_DATE_OPTIONAL_TIME = rf"{PARSE_DATE}(\D{PARSE_TIME})?"
 
-SUBJECT = r"([0-9]{6,7})"
+SUBJECT = r"(?P<subject>[0-9]{6,7})"
 PARSE_SUBJECT = rf"(?<![0-9]){SUBJECT}(?![0-9])"
-PARSE_SESSION_INDEX = r"_[0-9]+$"
+PARSE_SESSION_INDEX = r"(?P<id>_[0-9]+)$"
 PARSE_SESSION_ID = rf"{PARSE_SUBJECT}[_ ]+{PARSE_DATE_OPTIONAL_TIME}[_ ]+({PARSE_SESSION_INDEX})?"  # does not allow time after date
 
 VALID_DATE = rf"^{YEAR}-{MONTH}-{DAY}$"
@@ -84,19 +84,18 @@ def extract_isoformat_datetime(s: str) -> str | None:
     match = re.search(PARSE_DATETIME, str(s))
     if not match:
         return None
-    value = _strip_non_numeric(match.group(0))
     return (
-        value[:4]
+        match.group('year')
         + "-"
-        + value[4:6]
+        + match.group('month')
         + "-"
-        + value[6:8]
+        + match.group('day')
         + " "
-        + value[8:10]
+        + match.group('hour')
         + ":"
-        + value[10:12]
+        + match.group('minute')
         + ":"
-        + value[12:14]
+        + match.group('second')
     )
 
 
@@ -118,8 +117,7 @@ def extract_isoformat_date(s: str) -> str | None:
     match = re.search(PARSE_DATE, str(s))
     if not match:
         return None
-    value = _strip_non_numeric(match.group(0))
-    return value[:4] + "-" + value[4:6] + "-" + value[6:8]
+    return match.group('year') + "-" + match.group('month') + "-" + match.group('day')
 
 
 def extract_isoformat_time(s: str) -> str | None:
@@ -137,15 +135,11 @@ def extract_isoformat_time(s: str) -> str | None:
     """
     # matching datetime is more reliable than time alone:
     match = re.search(PARSE_DATETIME, str(s))
-    if match:
-        value = re.sub(PARSE_DATE, "", match.group(0))
-    else:
+    if not match:
         match = re.search(PARSE_TIME, str(s))
-        if not match:
-            return None
-        value = match.group(0)
-    value = _strip_non_numeric(value)
-    return value[:2] + ":" + value[2:4] + ":" + value[4:6]
+    if not match:
+        return None
+    return match.group('hour') + ":" + match.group('minute') + ":" + match.group('second')
 
 
 def extract_subject(s: str) -> int | None:
@@ -166,7 +160,7 @@ def extract_subject(s: str) -> int | None:
     match = re.search(PARSE_SUBJECT, s)
     if not match:
         return None
-    return int(_strip_non_numeric(match.group(0)))
+    return int(_strip_non_numeric(match.group('subject')))
 
 
 def extract_session_index(s: str) -> int | None:
@@ -183,7 +177,7 @@ def extract_session_index(s: str) -> int | None:
     match = re.search(PARSE_SESSION_INDEX, s)
     if not match:
         return None
-    return int(match.group(0).strip("_"))
+    return int(match.group('id').strip("_"))
 
 
 def extract_session_id(s: str, include_null_index: bool = False) -> str:
