@@ -7,9 +7,7 @@ from __future__ import annotations
 
 import re
 
-ID = r"^(_?[a-zA-Z0-9-:]_?)+$"
-
-PARSE_PROBE_LETTER = r"(?<=[pP{1}]robe)[-_\s]*([A-F]{1})(?![a-zA-Z])"
+PARSE_PROBE_LETTER = r"(?<=[pP{1}]robe)[-_\s]*(?P<letter>[A-F]{1})(?![a-zA-Z])"
 
 YEAR = r"(20[1-2][0-9])"
 MONTH = r"(0[1-9]|10|11|12)"
@@ -41,7 +39,8 @@ VALID_SUBJECT = rf"^{SUBJECT}$"
 VALID_SESSION_ID = (
     rf"^{VALID_SUBJECT.strip('^$')}_{VALID_DATE.strip('^$')}({PARSE_SESSION_INDEX})?$"
 )
-VALID_PROBE_NAME = r"^probe[A-F]{1}$"
+VALID_PROBE_LETTER = r"^(?P<letter>[A-F]{1})$"
+VALID_PROBE_NAME = rf"^probe{VALID_SUBJECT.strip('^$')}$"
 
 
 def _strip_non_numeric(s: str) -> str:
@@ -59,13 +58,18 @@ def extract_probe_letter(s: str) -> str | None:
     'A'
     >>> extract_probe_letter('probeA')
     'A'
+    >>> extract_probe_letter('A')
+    'A'
     >>> extract_probe_letter('testB Probe A2 sessionC')
     'A'
     >>> None is extract_probe_letter('366122_2021-06-01_10:12:03_3')
     True
     """
-    match = re.search(PARSE_PROBE_LETTER, s)
-    return match.group(1) if match else None
+    for pattern in (PARSE_PROBE_LETTER, VALID_PROBE_LETTER):
+        match = re.search(pattern, s)
+        if match:
+            return match.group('letter') 
+    return None
 
 
 def extract_isoformat_datetime(s: str) -> str | None:
