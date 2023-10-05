@@ -181,6 +181,10 @@ class ProbeRecord(StrRecord):
     Traceback (most recent call last):
     ...
     ValueError: ProbeRecord requires a string containing `probe` followed by a letter A-F, not '366122_2021-06-01_10:12:03_3'
+    >>> 'A' in [ProbeRecord('probeA')]
+    True
+    >>> ProbeRecord('probeA') in ['A']
+    True
     """
 
     valid_id_regex: ClassVar[str] = parsing.VALID_PROBE_NAME
@@ -199,6 +203,12 @@ class ProbeRecord(StrRecord):
         return self.id[-1]
 
 
+    def __eq__(self, other):
+        if str(self) == str(other) or str(self.letter) == str(other):
+            return True
+        return False
+    
+    
 class DateRecord(StrRecord):
     """Date records are stored in isoformat with hyphen seperators.
 
