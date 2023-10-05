@@ -68,7 +68,7 @@ def extract_probe_letter(s: str) -> str | None:
     for pattern in (PARSE_PROBE_LETTER, VALID_PROBE_LETTER):
         match = re.search(pattern, s)
         if match:
-            return match.group('letter') 
+            return match.group("letter")
     return None
 
 
@@ -85,17 +85,17 @@ def extract_isoformat_datetime(s: str) -> str | None:
     if not match:
         return None
     return (
-        match.group('year')
+        match.group("year")
         + "-"
-        + match.group('month')
+        + match.group("month")
         + "-"
-        + match.group('day')
+        + match.group("day")
         + " "
-        + match.group('hour')
+        + match.group("hour")
         + ":"
-        + match.group('minute')
+        + match.group("minute")
         + ":"
-        + match.group('second')
+        + match.group("second")
     )
 
 
@@ -117,7 +117,7 @@ def extract_isoformat_date(s: str) -> str | None:
     match = re.search(PARSE_DATE, str(s))
     if not match:
         return None
-    return match.group('year') + "-" + match.group('month') + "-" + match.group('day')
+    return match.group("year") + "-" + match.group("month") + "-" + match.group("day")
 
 
 def extract_isoformat_time(s: str) -> str | None:
@@ -139,7 +139,9 @@ def extract_isoformat_time(s: str) -> str | None:
         match = re.search(PARSE_TIME, str(s))
     if not match:
         return None
-    return match.group('hour') + ":" + match.group('minute') + ":" + match.group('second')
+    return (
+        match.group("hour") + ":" + match.group("minute") + ":" + match.group("second")
+    )
 
 
 def extract_subject(s: str) -> int | None:
@@ -160,7 +162,7 @@ def extract_subject(s: str) -> int | None:
     match = re.search(PARSE_SUBJECT, s)
     if not match:
         return None
-    return int(_strip_non_numeric(match.group('subject')))
+    return int(_strip_non_numeric(match.group("subject")))
 
 
 def extract_session_index(s: str) -> int | None:
@@ -177,7 +179,7 @@ def extract_session_index(s: str) -> int | None:
     match = re.search(PARSE_SESSION_INDEX, s)
     if not match:
         return None
-    return int(match.group('id').strip("_"))
+    return int(match.group("id").strip("_"))
 
 
 def extract_session_id(s: str, include_null_index: bool = False) -> str:
