@@ -1,3 +1,8 @@
+"""
+Functions for extracting session-related components from strings.
+
+Difficult to debug or modify without the fantastic https://regex101.com/
+"""
 from __future__ import annotations
 
 import re
