@@ -170,43 +170,46 @@ class SubjectRecord(MetadataRecord):
 
 
 class ProbeRecord(StrRecord):
-    """Probe records stored as `probeA` where letter is A-F
-    >>> ProbeRecord('probeA')
-    'probeA'
-    >>> ProbeRecord('probeA').letter
+    """Probe records stored as A-F
+    
+    >>> ProbeRecord('A')
     'A'
     >>> ProbeRecord('testB Probe A2 sessionC')
-    'probeA'
+    'A'
     >>> ProbeRecord('366122_2021-06-01_10:12:03_3')
     Traceback (most recent call last):
     ...
     ValueError: ProbeRecord requires a string containing `probe` followed by a letter A-F, not '366122_2021-06-01_10:12:03_3'
-    >>> 'A' in [ProbeRecord('probeA')]
+    >>> 'A' == ProbeRecord('probeA')
     True
-    >>> ProbeRecord('probeA') in ['A']
+    >>> 'probeA' == ProbeRecord('probeA')
+    False
+    >>> 'A' in {ProbeRecord('probeA')}
+    True
+    >>> ProbeRecord('probeA') in {'A'}
     True
     """
 
-    valid_id_regex: ClassVar[str] = parsing.VALID_PROBE_NAME
+    valid_id_regex: ClassVar[str] = parsing.VALID_PROBE_LETTER
+
 
     @classmethod
     def parse_id(cls, value: str) -> str:
         letter = parsing.extract_probe_letter(str(value))
         if letter is None:
             raise ValueError(
-                f"{cls.__name__} requires a string containing `probe` followed by a letter A-F, not {value!r}"
+                f"{cls.__name__} requires a string containing `probe` followed by a letter A-F, or a single capital A-F alone, not {value!r}"
             )
-        return str(super().parse_id(f"probe{letter}"))
+        return letter
 
-    @property
-    def letter(self) -> str:
-        return self.id[-1]
+    def __eq__(self, other: Any) -> bool:
+        try:
+            return str(self) == str(other)
+        except (ValueError, TypeError):
+            return False
 
-    def __eq__(self, other):
-        if str(self) == str(other) or str(self.letter) == str(other):
-            return True
-        return False
-
+    def __hash__(self) -> int:
+        return hash(self.id)
 
 class DateRecord(StrRecord):
     """Date records are stored in isoformat with hyphen seperators.
