@@ -174,6 +174,8 @@ class ProbeRecord(StrRecord):
     
     >>> ProbeRecord('A')
     'A'
+    >>> ProbeRecord('A').name
+    'probeA'
     >>> ProbeRecord('testB Probe A2 sessionC')
     'A'
     >>> ProbeRecord('366122_2021-06-01_10:12:03_3')
@@ -201,6 +203,10 @@ class ProbeRecord(StrRecord):
                 f"{cls.__name__} requires a string containing `probe` followed by a letter A-F, or a single capital A-F alone, not {value!r}"
             )
         return letter
+
+    @property
+    def name(self) -> str:
+        return f"probe{self.id}"
 
     def __eq__(self, other: Any) -> bool:
         try:
