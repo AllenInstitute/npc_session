@@ -40,7 +40,7 @@ VALID_SESSION_ID = (
     rf"^{VALID_SUBJECT.strip('^$')}_{VALID_DATE.strip('^$')}({PARSE_SESSION_INDEX})?$"
 )
 VALID_PROBE_LETTER = r"^(?P<letter>[A-F]{1})$"
-VALID_PROBE_NAME = rf"^probe{VALID_SUBJECT.strip('^$')}$"
+VALID_PROBE_NAME = rf"^probe{VALID_PROBE_LETTER.strip('^$')}$"
 
 
 def _strip_non_numeric(s: str) -> str:
