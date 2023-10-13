@@ -170,6 +170,7 @@ class SubjectRecord(MetadataRecord):
     def parse_id(cls, value: int | str) -> int:
         return int(super().parse_id(int(str(value))))
 
+
 class ProbeRecord(StrRecord):
     """Probe records stored as A-F
 
