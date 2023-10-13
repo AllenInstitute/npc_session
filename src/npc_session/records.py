@@ -110,7 +110,7 @@ class MetadataRecord:
         return str(self.id)
 
     def __hash__(self) -> int:
-        return hash(self.id) ^ hash(self.__class__.__name__)
+        return hash(self.id)
 
     def __eq__(self, other: Any) -> bool:
         try:
@@ -162,12 +162,13 @@ class SubjectRecord(MetadataRecord):
     True
     >>> isinstance(subject, (int, str))
     False
+    >>> hash(subject) == hash(366122)
+    True
     """
 
     @classmethod
     def parse_id(cls, value: int | str) -> int:
         return int(super().parse_id(int(str(value))))
-
 
 class ProbeRecord(StrRecord):
     """Probe records stored as A-F
@@ -206,15 +207,6 @@ class ProbeRecord(StrRecord):
     @property
     def name(self) -> str:
         return f"probe{self.id}"
-
-    def __eq__(self, other: Any) -> bool:
-        try:
-            return str(self) == str(other)
-        except (ValueError, TypeError):
-            return False
-
-    def __hash__(self) -> int:
-        return hash(self.id)
 
 
 class DateRecord(StrRecord):
