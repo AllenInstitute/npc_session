@@ -150,7 +150,7 @@ class ProjectRecord(StrRecord):
     valid_id_regex = r"[a-zA-Z0-9-_.]+"
 
 
-class SubjectRecord(MetadataRecord):
+class SubjectRecord(IntRecord):
     """To uniquely define a subject we need:
     - `id`: labtracks MID
 
@@ -160,8 +160,8 @@ class SubjectRecord(MetadataRecord):
     366122
     >>> subject == 366122 and subject == '366122'
     True
-    >>> isinstance(subject, (int, str))
-    False
+    >>> isinstance(subject, int)
+    True
     >>> hash(subject) == hash(366122)
     True
     """
