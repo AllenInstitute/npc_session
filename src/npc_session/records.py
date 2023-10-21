@@ -132,12 +132,13 @@ class StrRecord(MetadataRecord, str):
     def __getslice__(self, i: int, j: int) -> str:
         """
         Added to fix the following bug:
-        
+
         >>> a = StrRecord('DRPilot_366122_20220425')
         >>> assert a[:] in a.id, f"slicing should access {a.id[:]=} , not the original value passed to init {a[:]=}"
         """
         return self.id[i:j]
-    
+
+
 class IntRecord(MetadataRecord, int):
     id: int
 
@@ -175,7 +176,7 @@ class SubjectRecord(IntRecord):
     """
 
     valid_id_regex = parsing.VALID_SUBJECT
-    
+
     @classmethod
     def parse_id(cls, value: int | str) -> int:
         return int(super().parse_id(int(str(value))))
