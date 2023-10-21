@@ -129,7 +129,15 @@ class MetadataRecord:
 class StrRecord(MetadataRecord, str):
     id: str
 
-
+    def __getslice__(self, i: int, j: int) -> str:
+        """
+        Added to fix the following bug:
+        
+        >>> a = StrRecord('DRPilot_366122_20220425')
+        >>> assert a[:] in a.id, f"slicing should access {a.id[:]=} , not the original value passed to init {a[:]=}"
+        """
+        return self.id[i:j]
+    
 class IntRecord(MetadataRecord, int):
     id: int
 
