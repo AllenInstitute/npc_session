@@ -542,7 +542,6 @@ class SessionRecord(StrRecord):
 
 
 if __name__ == "__main__":
-    SessionRecord("DRPilot_366122_20220425")[:]
     import doctest
 
     doctest.testmod(
