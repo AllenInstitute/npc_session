@@ -5,6 +5,8 @@ import re
 import typing
 from typing import Any, ClassVar, Protocol, TypeVar
 
+from typing_extensions import Self
+
 import npc_session.parsing as parsing
 
 
@@ -128,19 +130,16 @@ class MetadataRecord:
 
 class StrRecord(MetadataRecord, str):
     id: str
-
-    def __getslice__(self, i: int, j: int) -> str:
-        """
-        Added to fix the following bug:
-
-        >>> a = StrRecord('DRPilot_366122_20220425')
-        >>> assert a[:] in a.id, f"slicing should access {a.id[:]=} , not the original value passed to init {a[:]=}"
-        """
-        return self.id[i:j]
+    
+    def __new__(cls, content) -> Self:
+        return super().__new__(cls, cls.parse_id(content))
 
 
 class IntRecord(MetadataRecord, int):
     id: int
+
+    def __new__(cls, content) -> Self:
+        return super().__new__(cls, cls.parse_id(content))
 
 
 class ProjectRecord(StrRecord):
@@ -442,6 +441,9 @@ class SessionRecord(StrRecord):
     Traceback (most recent call last):
     ...
     ValueError: SessionRecord.id must match SessionRecord.valid_id_regex
+    
+    >>> a = SessionRecord('DRPilot_366122_20220425')
+    >>> assert a[:] in a.id, f"slicing should access {a.id[:]=} , not the original value passed to init {a[:]=}"
     """
 
     id: str
@@ -540,6 +542,7 @@ class SessionRecord(StrRecord):
 
 
 if __name__ == "__main__":
+    SessionRecord('DRPilot_366122_20220425')[:]
     import doctest
 
     doctest.testmod(
