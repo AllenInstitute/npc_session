@@ -166,6 +166,8 @@ class SubjectRecord(IntRecord):
     True
     """
 
+    valid_id_regex = parsing.VALID_SUBJECT
+    
     @classmethod
     def parse_id(cls, value: int | str) -> int:
         return int(super().parse_id(int(str(value))))
