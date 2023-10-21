@@ -130,7 +130,7 @@ class MetadataRecord:
 
 class StrRecord(MetadataRecord, str):
     id: str
-    
+
     def __new__(cls, content) -> Self:
         return super().__new__(cls, cls.parse_id(content))
 
@@ -441,7 +441,7 @@ class SessionRecord(StrRecord):
     Traceback (most recent call last):
     ...
     ValueError: SessionRecord.id must match SessionRecord.valid_id_regex
-    
+
     >>> a = SessionRecord('DRPilot_366122_20220425')
     >>> assert a[:] in a.id, f"slicing should access {a.id[:]=} , not the original value passed to init {a[:]=}"
     """
@@ -542,7 +542,7 @@ class SessionRecord(StrRecord):
 
 
 if __name__ == "__main__":
-    SessionRecord('DRPilot_366122_20220425')[:]
+    SessionRecord("DRPilot_366122_20220425")[:]
     import doctest
 
     doctest.testmod(
