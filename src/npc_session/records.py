@@ -59,7 +59,7 @@ class MetadataRecord:
     AttributeError: MetadataRecord.id is read-only
     """
 
-    valid_id_regex: ClassVar[str] = r"[0-9-_: ]+"
+    valid_id_regex: ClassVar[str] = r"[a-zA-Z0-9-_: ]+"
 
     def __init__(self, value: int | str) -> None:
         self.id = value
