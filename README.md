@@ -26,11 +26,21 @@ Parse a normalized ID from a path or string:
 >>> s = SessionRecord('//allen/programs/mindscope/workgroups/templeton/TTOC/2022-07-26_14-09-36_366122')
 >>> s
 '366122_2022-07-26'
+>>> s.idx
+0
 >>> s.subject
 366122
 >>> s.date
 '2022-07-26'
+>>> s.date.dt
+datetime.date(2022, 7, 26)
 >>> s.date.year
 2022
+>>> s_1 = SessionRecord('//allen/programs/mindscope/workgroups/templeton/TTOC/2022-07-26_14-09-36_366122_1')
+>>> s_1.idx
+1
+>>> s_2 = s_1.with_idx(2)
+>>> s_2.idx
+2
 
 ```
