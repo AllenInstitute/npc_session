@@ -31,6 +31,7 @@ SUBJECT = r"(?P<subject>[0-9]{6,7})"
 PARSE_SUBJECT = rf"(?<![0-9]){SUBJECT}(?![0-9])"
 PARSE_SESSION_INDEX = r"(?P<id>_[0-9]+)$"
 PARSE_SESSION_ID = rf"{PARSE_SUBJECT}[_ ]+{PARSE_DATE_OPTIONAL_TIME}[_ ]+({PARSE_SESSION_INDEX})?"  # does not allow time after date
+PARSE_AIND_SESSION_ID = rf"(?P<modality>[^\_]+)(?=\_)_{PARSE_SUBJECT}(?=\_)_{PARSE_DATE}(?=\_)_{PARSE_TIME}"
 
 VALID_DATE = rf"^{YEAR}-{MONTH}-{DAY}$"
 VALID_TIME = rf"^{HOUR}:{MINUTE}:{SECOND}$"
@@ -207,9 +208,29 @@ def extract_session_id(s: str, include_null_index: bool = False) -> str:
     return f"{subject}_{date}" + (f"_{index}" if index or include_null_index else "")
 
 
+def extract_aind_session_id(s: str) -> str:
+    """Extract session ID with AIND formatting.
+    
+    Raises ValueError if no ID found.
+
+    >>> extract_aind_session_id('ecephys_366122_2021-06-01_10-12-03_sorted')
+    'ecephys_366122_2021-06-01_10-12-03'
+    >>> extract_aind_session_id('prefix_ecephys_366122_2021-06-01_10-12-03_sorted')
+    'ecephys_366122_2021-06-01_10-12-03'
+    >>> extract_aind_session_id('366122_2021-06-01_10-12-03_sorted')
+    Traceback (most recent call last):
+    ...
+    ValueError: Could not extract AIND session ID from 366122_2021-06-01_10-12-03_sorted
+    """
+    match = re.search(PARSE_AIND_SESSION_ID, s)
+    if not match:
+        raise ValueError(f"Could not extract AIND session ID from {s}")
+    return f"{match.group('modality')}_{match.group('subject')}_{match.group('year')}-{match.group('month')}-{match.group('day')}_{match.group('hour')}-{match.group('minute')}-{match.group('second')}"
+
 if __name__ == "__main__":
     import doctest
 
     doctest.testmod(
         optionflags=(doctest.IGNORE_EXCEPTION_DETAIL | doctest.NORMALIZE_WHITESPACE)
     )
+    print(PARSE_AIND_SESSION_ID)
