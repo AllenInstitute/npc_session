@@ -26,7 +26,9 @@ SUBSECOND = r"(?P<subsecond>[0-9]{1,6})"
 TIME_SEP = r"[-:.]?"
 TIME_SEP_AIND = r"[-:._]"
 PARSE_TIME = rf"{HOUR}{TIME_SEP}{MINUTE}{TIME_SEP}{SECOND}(\.{SUBSECOND})?"
-PARSE_TIME_AIND = rf"{HOUR}{TIME_SEP_AIND}{MINUTE}{TIME_SEP_AIND}{SECOND}(\.{SUBSECOND})?"
+PARSE_TIME_AIND = (
+    rf"{HOUR}{TIME_SEP_AIND}{MINUTE}{TIME_SEP_AIND}{SECOND}(\.{SUBSECOND})?"
+)
 # avoid parsing time alone without a preceding date:
 # if seperators not present will falsely match 8-digit numbers with low values
 
@@ -37,9 +39,7 @@ SUBJECT = r"(?P<subject>[0-9]{6,7})"
 PARSE_SUBJECT = rf"(?<![0-9]){SUBJECT}(?![0-9])"
 PARSE_SESSION_INDEX = r"(?P<id>_[0-9]+)$"
 PARSE_SESSION_ID = rf"{PARSE_SUBJECT}[_ ]+{PARSE_DATE_OPTIONAL_TIME}[_ ]+({PARSE_SESSION_INDEX})?"  # does not allow time after date
-PARSE_AIND_SESSION_ID = (
-    rf"(?P<modality>[^\_]+)(?=\_)_{PARSE_SUBJECT}(?=\_)_{PARSE_DATE_AIND}(?=\_)_{PARSE_TIME_AIND}"
-)
+PARSE_AIND_SESSION_ID = rf"(?P<modality>[^\_]+)(?=\_)_{PARSE_SUBJECT}(?=\_)_{PARSE_DATE_AIND}(?=\_)_{PARSE_TIME_AIND}"
 
 VALID_DATE = rf"^{YEAR}-{MONTH}-{DAY}$"
 VALID_TIME = rf"^{HOUR}:{MINUTE}:{SECOND}$"
