@@ -2,6 +2,8 @@
 Functions for extracting session-related components from strings.
 
 Difficult to debug or modify without the fantastic https://regex101.com/
+
+Regex101 is amazing
 """
 from __future__ import annotations
 
@@ -13,14 +15,18 @@ YEAR = r"(?P<year>20[1-2][0-9])"
 MONTH = r"(?P<month>0[1-9]|10|11|12)"
 DAY = r"(?P<day>0[1-9]|[1-2][0-9]|3[0-1])"
 DATE_SEP = r"[-/]?"
+DATE_SEP_AIND = r"[-/_]"
 PARSE_DATE = rf"{YEAR}{DATE_SEP}{MONTH}{DATE_SEP}{DAY}"
+PARSE_DATE_AIND = rf"{YEAR}{DATE_SEP_AIND}{MONTH}{DATE_SEP_AIND}{DAY}"
 
 HOUR = r"(?P<hour>[0-1][0-9]|[2][0-3])"
 MINUTE = r"(?P<minute>[0-5][0-9])"
 SECOND = r"(?P<second>[0-5][0-9])"
 SUBSECOND = r"(?P<subsecond>[0-9]{1,6})"
 TIME_SEP = r"[-:.]?"
+TIME_SEP_AIND = r"[-:._]"
 PARSE_TIME = rf"{HOUR}{TIME_SEP}{MINUTE}{TIME_SEP}{SECOND}(\.{SUBSECOND})?"
+PARSE_TIME_AIND = rf"{HOUR}{TIME_SEP_AIND}{MINUTE}{TIME_SEP_AIND}{SECOND}(\.{SUBSECOND})?"
 # avoid parsing time alone without a preceding date:
 # if seperators not present will falsely match 8-digit numbers with low values
 
@@ -32,7 +38,7 @@ PARSE_SUBJECT = rf"(?<![0-9]){SUBJECT}(?![0-9])"
 PARSE_SESSION_INDEX = r"(?P<id>_[0-9]+)$"
 PARSE_SESSION_ID = rf"{PARSE_SUBJECT}[_ ]+{PARSE_DATE_OPTIONAL_TIME}[_ ]+({PARSE_SESSION_INDEX})?"  # does not allow time after date
 PARSE_AIND_SESSION_ID = (
-    rf"(?P<modality>[^\_]+)(?=\_)_{PARSE_SUBJECT}(?=\_)_{PARSE_DATE}(?=\_)_{PARSE_TIME}"
+    rf"(?P<modality>[^\_]+)(?=\_)_{PARSE_SUBJECT}(?=\_)_{PARSE_DATE_AIND}(?=\_)_{PARSE_TIME_AIND}"
 )
 
 VALID_DATE = rf"^{YEAR}-{MONTH}-{DAY}$"
@@ -219,6 +225,8 @@ def extract_aind_session_id(s: str) -> str:
     'ecephys_366122_2021-06-01_10-12-03'
     >>> extract_aind_session_id('prefix_ecephys_366122_2021-06-01_10-12-03_sorted')
     'ecephys_366122_2021-06-01_10-12-03'
+    >>> extract_aind_session_id('ecephys_686740_2023_10_26_12_29_08_to_dlc_side')
+    'ecephys_686740_2023-10-26_12-29-08'
     >>> extract_aind_session_id('366122_2021-06-01_10-12-03_sorted')
     Traceback (most recent call last):
     ...
