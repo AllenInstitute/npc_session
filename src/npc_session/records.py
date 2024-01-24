@@ -444,6 +444,9 @@ class SessionRecord(StrRecord):
 
     >>> a = SessionRecord('DRPilot_366122_20220425')
     >>> assert a[:] in a.id, f"slicing should access {a.id[:]=} , not the original value passed to init {a[:]=}"
+    
+    # hashes match string with idx
+    >>> assert '366122_2022-04-25_0' in {SessionRecord('366122_2022-04-25')}
     """
 
     id: str
@@ -532,13 +535,10 @@ class SessionRecord(StrRecord):
     def __hash__(self) -> int:
         """
         >>> assert SessionRecord('366122_2022-04-25') in {SessionRecord('366122_2022-04-25')}
+        >>> assert '366122_2022-04-25_0' in {SessionRecord('366122_2022-04-25')}
+        >>> assert SessionRecord('366122_2022-04-25') in {'366122_2022-04-25_0'}
         """
-        return (
-            hash(self.subject)
-            ^ hash(self.date)
-            ^ hash(self.idx)
-            ^ hash(self.__class__.__name__)
-        )
+        return hash(self.id)
 
 
 if __name__ == "__main__":
