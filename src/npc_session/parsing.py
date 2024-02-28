@@ -6,8 +6,8 @@ Difficult to debug or modify without the fantastic https://regex101.com/
 Regex101 is amazing
 """
 from __future__ import annotations
-import contextlib
 
+import contextlib
 import re
 from typing import Literal
 
@@ -243,6 +243,7 @@ def extract_aind_session_id(s: str) -> str:
         raise ValueError(f"Could not extract AIND session ID from {s}")
     return f"{match.group('modality')}_{match.group('subject')}_{match.group('year')}-{match.group('month')}-{match.group('day')}_{match.group('hour')}-{match.group('minute')}-{match.group('second')}"
 
+
 def extract_mvr_camera_name(s: str) -> CameraName:
     """Extract MVR camera name from a string.
     Raises ValueError if no camera name found.
@@ -266,6 +267,7 @@ def extract_mvr_camera_name(s: str) -> CameraName:
     with contextlib.suppress(StopIteration):
         return names[next(n for n in names if n in str(s).lower())]
     raise ValueError(f"Could not extract camera name from {s}")
+
 
 if __name__ == "__main__":
     import doctest
