@@ -6,8 +6,14 @@ Difficult to debug or modify without the fantastic https://regex101.com/
 Regex101 is amazing
 """
 from __future__ import annotations
+import contextlib
 
 import re
+from typing import Literal
+
+from typing_extensions import TypeAlias
+
+CameraName: TypeAlias = Literal["eye", "face", "behavior"]
 
 PARSE_PROBE_LETTER = r"(?<=[pP{1}]robe)[-_\s]*(?P<letter>[A-F]{1})(?![a-zA-Z])"
 
@@ -237,6 +243,29 @@ def extract_aind_session_id(s: str) -> str:
         raise ValueError(f"Could not extract AIND session ID from {s}")
     return f"{match.group('modality')}_{match.group('subject')}_{match.group('year')}-{match.group('month')}-{match.group('day')}_{match.group('hour')}-{match.group('minute')}-{match.group('second')}"
 
+def extract_mvr_camera_name(s: str) -> CameraName:
+    """Extract MVR camera name from a string.
+    Raises ValueError if no camera name found.
+
+    >>> extract_mvr_camera_name('Eye_20231023T141119.mp4')
+    'eye'
+    >>> extract_mvr_camera_name('Behavior_20231023T141119.mp4')
+    'behavior'
+    >>> extract_mvr_camera_name('1332563048_717439_20240222.beh.mp4')
+    'behavior'
+    >>> extract_mvr_camera_name('MVR_366122_2021-06-01_10-12-03')
+    Traceback (most recent call last):
+    ...
+    ValueError: Could not extract MVR camera name from MVR_366122_2021-06-01_10-12-03
+    """
+    names: dict[str, CameraName] = {
+        "eye": "eye",
+        "face": "face",
+        "beh": "behavior",
+    }
+    with contextlib.suppress(StopIteration):
+        return names[next(n for n in names if n in str(s).lower())]
+    raise ValueError(f"Could not extract camera name from {s}")
 
 if __name__ == "__main__":
     import doctest
