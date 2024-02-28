@@ -244,4 +244,3 @@ if __name__ == "__main__":
     doctest.testmod(
         optionflags=(doctest.IGNORE_EXCEPTION_DETAIL | doctest.NORMALIZE_WHITESPACE)
     )
-    print(PARSE_AIND_SESSION_ID)
