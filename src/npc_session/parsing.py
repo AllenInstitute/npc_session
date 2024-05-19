@@ -47,6 +47,16 @@ PARSE_SESSION_INDEX = r"(?P<id>_[0-9]+)$"
 PARSE_SESSION_ID = rf"{PARSE_SUBJECT}[_ ]+{PARSE_DATE_OPTIONAL_TIME}[_ ]+({PARSE_SESSION_INDEX})?"  # does not allow time after date
 PARSE_AIND_SESSION_ID = rf"(?P<modality>[^\_]+)(?=\_)_{PARSE_SUBJECT}(?=\_)_{PARSE_DATE_AIND}(?=\_)_{PARSE_TIME_AIND}"
 
+RIG_ID_ROOM_NUMBER = r"(?P<room_number>[0-9]{1,3}[_])"  # range incase room number is less than 3 digits
+RIG_ID_MAJOR = r"(?P<id_major>[a-zA-Z]{2,6})"  # all current prefixes are 3 characters but this allows for future expansion
+RIG_ID_MINOR = r"(?P<id_minor>\w)"
+RIG_ID_COMPUTER_INDEX = r"(?P<computer_index>[0-9]|UNKNOWN)"
+RIG_ID_MODIFICATION_DATE = r"(?P<modification_date>[0-9]{6,8})"  # date can be in format YYMMDD or YYYYMMDD
+PARSE_SUBSTANDARD_RIG_ID = (
+    rf"{RIG_ID_ROOM_NUMBER}?{RIG_ID_MAJOR}?[.]?{RIG_ID_MINOR}[-]?(?:Box)?"
+    rf"({RIG_ID_COMPUTER_INDEX})?([_]{RIG_ID_MODIFICATION_DATE})?"
+)
+
 VALID_DATE = rf"^{YEAR}-{MONTH}-{DAY}$"
 VALID_TIME = rf"^{HOUR}:{MINUTE}:{SECOND}$"
 VALID_DATETIME = rf"^{VALID_DATE.strip('^$')}\s{VALID_TIME.strip('^$')}$"
@@ -267,6 +277,59 @@ def extract_mvr_camera_name(s: str) -> CameraName:
     with contextlib.suppress(StopIteration):
         return names[next(n for n in names if n in str(s).lower())]
     raise ValueError(f"Could not extract camera name from {s}")
+
+
+def extract_rig_id_parts(s: str) -> tuple[str | None, str | None, str | None]:
+    """Extract rig id parts from a string. Rig id parts are used to normalize
+     substandard rig_ids.
+
+    Parts returned if detected (if not will be `None`):
+    - id_major
+    - id_minor
+    - computer_index
+
+    More documentation on rig id parts at: `npc_session.records.RigIdRecord`
+
+    Notes
+    -----
+    - Parses amd extracts but does not validation, please refer to
+     `npc_session.records.RigIdRecord` for that.
+
+    Examples
+    --------
+    >>> extract_rig_id_parts("BEH.D-Box2")
+    ('BEH', 'D', '2')
+    >>> extract_rig_id_parts("BEH.B")
+    ('BEH', 'B', None)
+    >>> extract_rig_id_parts("D2")
+    (None, 'D', '2')
+    >>> extract_rig_id_parts("NP.0")
+    ('NP', '0', None)
+    >>> extract_rig_id_parts("NP0")
+    ('NP', '0', None)
+    >>> extract_rig_id_parts("NSB.D-1")
+    ('NSB', 'D', '1')
+    >>> extract_rig_id_parts("342_SAM.B-2_240401")
+    ('SAM', 'B', '2')
+    >>> extract_rig_id_parts("342_SAM.B-UNKNOWN_240401")
+    ('SAM', 'B', None)
+    """
+    match = re.match(
+        PARSE_SUBSTANDARD_RIG_ID,
+        s,
+    )
+    if not match:
+        raise ValueError(f"Could not extract rig name from {s}")
+
+    computer_index = match.group("computer_index")
+    if match.group("computer_index") == "UNKNOWN":
+        computer_index = None
+
+    return (
+        match.group("id_major"),
+        match.group("id_minor"),
+        computer_index,
+    )
 
 
 if __name__ == "__main__":
