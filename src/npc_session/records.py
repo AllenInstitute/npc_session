@@ -544,7 +544,7 @@ class SessionRecord(StrRecord):
 class RigRecord(StrRecord):
 
     """To uniquely define a rig we need:
-    - `id`: a multipart underscore-separated str corresponding to:
+    - `id`: a multipart str corresponding to:
 
         <id_major>.<id_minor>-<computer_index>
 
@@ -577,6 +577,8 @@ class RigRecord(StrRecord):
     >>> r = RigRecord('NSB.F-2')
     >>> r.behavior_cluster_id
     'F'
+    >>> r.is_behavior_cluster_rig
+    True
     >>> r.as_aind_data_schema_rig_id("346", datetime.date(2024, 4, 1))
     '346_BEHNSB.F-2_20240401'
 
@@ -587,8 +589,6 @@ class RigRecord(StrRecord):
     """
     valid_id_regex: ClassVar[str] = parsing.VALID_RIG_ID
 
-    NEUROPIXELS_RIG_IDS_MAJOR = ("NP", )
-    SAM_CLUSTERS = ("B", )
     AIND_DATA_SCHEMA_RIG_ID_SEPARATOR = "_"
     AIND_DATA_SCHEMA_RIG_ID_MOD_DATE_FORMAT = "%Y%m%d"
 
@@ -597,19 +597,7 @@ class RigRecord(StrRecord):
         """Pre-validation. Handle any parsing or casting to get to the stored
          type.
         """
-        id_major, id_minor, computer_index = parsing.extract_rig_id_parts(
-            value)
-        if id_major == parsing.NP_RIG_ID_MAJOR:
-            return f"{id_major}.{id_minor}"
-        else:
-            # override id_major based on object cluster definitions
-            if id_minor in cls.SAM_CLUSTERS:
-                id_major = parsing.SAM_RIG_ID_MAJOR
-            else:
-                id_major = parsing.NSB_RIG_ID_MAJOR
-            if computer_index is None:
-                computer_index = "UNKNOWN"
-            return f"{id_major}.{id_minor}-{computer_index}"
+        return parsing.extract_rig_id(value)
 
     @property
     def is_neuro_pixels_rig(self) -> bool:

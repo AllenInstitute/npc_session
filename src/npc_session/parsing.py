@@ -69,9 +69,10 @@ VALID_PROBE_NAME = rf"^probe{VALID_PROBE_LETTER.strip('^$')}$"
 SAM_RIG_ID_MAJOR = "BEHDEV"
 NSB_RIG_ID_MAJOR = "BEHNSB"
 NP_RIG_ID_MAJOR = "NP"
+SAM_CLUSTER_LETTER = "B"
 CLUSTER_RIG_INDEX = r"(?:[1-6]|UNKNOWN)"
 NSB_RIG_ID = rf"{NSB_RIG_ID_MAJOR}.(?:[AC-Z])-{CLUSTER_RIG_INDEX}"
-SAM_RIG_ID = rf"{SAM_RIG_ID_MAJOR}.B-{CLUSTER_RIG_INDEX}"
+SAM_RIG_ID = rf"{SAM_RIG_ID_MAJOR}.{SAM_CLUSTER_LETTER}-{CLUSTER_RIG_INDEX}"
 NP_RIG_ID = rf"{NP_RIG_ID_MAJOR}.(?:[0-3])"
 VALID_RIG_ID = rf"^(({NSB_RIG_ID})|({SAM_RIG_ID})|({NP_RIG_ID}))$"
 
@@ -287,14 +288,8 @@ def extract_mvr_camera_name(s: str) -> CameraName:
     raise ValueError(f"Could not extract camera name from {s}")
 
 
-def extract_rig_id_parts(s: str) -> tuple[str | None, str | None, str | None]:
-    """Extract rig id parts from a string. Rig id parts are used to normalize
-     substandard rig_ids.
-
-    Parts returned if detected (if not will be `None`):
-    - id_major
-    - id_minor
-    - computer_index
+def extract_rig_id(s: str) -> str:
+    """Extracts a standardized rig id from a string.
 
     More documentation on rig id parts at: `npc_session.records.RigIdRecord`
 
@@ -305,45 +300,53 @@ def extract_rig_id_parts(s: str) -> tuple[str | None, str | None, str | None]:
 
     Examples
     --------
-    >>> extract_rig_id_parts("BEH.D-Box2")
-    ('BEH', 'D', '2')
-    >>> extract_rig_id_parts("BEH.B")
-    ('BEH', 'B', None)
-    >>> extract_rig_id_parts("D2")
-    (None, 'D', '2')
-    >>> extract_rig_id_parts("NP.0")
-    ('NP', '0', None)
-    >>> extract_rig_id_parts("NP0")
-    ('NP', '0', None)
-    >>> extract_rig_id_parts("BEHNSB.D-1")
-    ('BEHNSB', 'D', '1')
-    >>> extract_rig_id_parts("342_BEHDEV.B-2_240401")
-    ('BEHDEV', 'B', '2')
-    >>> extract_rig_id_parts("342_BEHDEV.B-UNKNOWN_240401")
-    ('BEHDEV', 'B', None)
-    >>> extract_rig_id_parts("UNKNOWN_BEHDEV.B-UNKNOWN")
-    ('BEHDEV', 'B', None)
-    >>> extract_rig_id_parts("unknown_BEHDEV.B-UNKNOWN")
-    ('BEHDEV', 'B', None)
-    >>> extract_rig_id_parts("unknown_BEHDEV.B-unknown")
-    ('BEHDEV', 'B', None)
+    >>> extract_rig_id("BEH.D-Box2")
+    'BEHNSB.D-2'
+    >>> extract_rig_id("BEH.B")
+    'BEHDEV.B-UNKNOWN'
+    >>> extract_rig_id("D2")
+    'BEHNSB.D-2'
+    >>> extract_rig_id("NP.0")
+    'NP.0'
+    >>> extract_rig_id("NP0")
+    'NP.0'
+    >>> extract_rig_id("BEHNSB.D-1")
+    'BEHNSB.D-1'
+    >>> extract_rig_id("342_BEHDEV.B-2_240401")
+    'BEHDEV.B-2'
+    >>> extract_rig_id("342_BEHDEV.B-UNKNOWN_240401")
+    'BEHDEV.B-UNKNOWN'
+    >>> extract_rig_id("UNKNOWN_BEHDEV.B-UNKNOWN")
+    'BEHDEV.B-UNKNOWN'
+    >>> extract_rig_id("unknown_BEHDEV.B-UNKNOWN")
+    'BEHDEV.B-UNKNOWN'
+    >>> extract_rig_id("unknown_BEHDEV.B-unknown")
+    'BEHDEV.B-UNKNOWN'
     """
     match = re.match(
         PARSE_SUBSTANDARD_RIG_ID,
         s,
     )
     if not match:
-        raise ValueError(f"Could not extract rig name from {s}")
+        raise ValueError(f"Could not extract rig id from {s}")
 
-    computer_index = match.group("computer_index")
-    if computer_index and computer_index.lower() == "unknown":
-        computer_index = None
+    if match.group("id_major") == NP_RIG_ID_MAJOR:
+        return f"{NP_RIG_ID_MAJOR}.{match.group('id_minor')}"
 
-    return (
-        match.group("id_major"),
-        match.group("id_minor"),
-        computer_index,
-    )
+    id_minor = match.group("id_minor")
+    if id_minor == SAM_CLUSTER_LETTER:
+        id_major = SAM_RIG_ID_MAJOR
+    else:
+        id_major = NSB_RIG_ID_MAJOR
+
+    extracted_computer_index = match.group("computer_index")
+    if extracted_computer_index is None or \
+            extracted_computer_index.lower() == "unknown":
+        computer_index = "UNKNOWN"
+    else:
+        computer_index = extracted_computer_index
+
+    return f"{id_major}.{id_minor}-{computer_index}"
 
 
 if __name__ == "__main__":
