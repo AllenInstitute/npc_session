@@ -575,6 +575,8 @@ class RigRecord(StrRecord):
 
     Convert to `aind_data_schema.core.rig.Rig.rig_id`:
     >>> r = RigRecord('NSB.F-2')
+    >>> r.behavior_cluster_id
+    'F'
     >>> r.as_aind_data_schema_rig_id("346", datetime.date(2024, 4, 1))
     '346_BEHNSB.F-2_20240401'
 
