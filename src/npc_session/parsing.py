@@ -47,13 +47,13 @@ PARSE_SESSION_INDEX = r"(?P<id>_[0-9]+)$"
 PARSE_SESSION_ID = rf"{PARSE_SUBJECT}[_ ]+{PARSE_DATE_OPTIONAL_TIME}[_ ]+({PARSE_SESSION_INDEX})?"  # does not allow time after date
 PARSE_AIND_SESSION_ID = rf"(?P<modality>[^\_]+)(?=\_)_{PARSE_SUBJECT}(?=\_)_{PARSE_DATE_AIND}(?=\_)_{PARSE_TIME_AIND}"
 
-RIG_ID_ROOM_NUMBER = r"(?P<room_number>[0-9]{1,3}[_])"  # range incase room number is less than 3 digits
+RIG_ID_ROOM_NUMBER = r"(?P<room_number>[0-9]{1,3}|UNKNOWN|unknown)"  # range incase room number is less than 3 digits
 RIG_ID_MAJOR = r"(?P<id_major>[a-zA-Z]{2,6})"  # all current prefixes are 3 characters but this allows for future expansion
 RIG_ID_MINOR = r"(?P<id_minor>\w)"
-RIG_ID_COMPUTER_INDEX = r"(?P<computer_index>[0-9]|UNKNOWN)"
+RIG_ID_COMPUTER_INDEX = r"(?P<computer_index>[0-9]|UNKNOWN|unknown)"
 RIG_ID_MODIFICATION_DATE = r"(?P<modification_date>[0-9]{6,8})"  # date can be in format YYMMDD or YYYYMMDD
 PARSE_SUBSTANDARD_RIG_ID = (
-    rf"{RIG_ID_ROOM_NUMBER}?{RIG_ID_MAJOR}?[.]?{RIG_ID_MINOR}[-]?(?:Box)?"
+    rf"({RIG_ID_ROOM_NUMBER}[_])?{RIG_ID_MAJOR}?[.]?{RIG_ID_MINOR}[-]?(?:Box)?"
     rf"({RIG_ID_COMPUTER_INDEX})?([_]{RIG_ID_MODIFICATION_DATE})?"
 )
 
@@ -66,6 +66,14 @@ VALID_SESSION_ID = (
 )
 VALID_PROBE_LETTER = r"^(?P<letter>[A-F]{1})$"
 VALID_PROBE_NAME = rf"^probe{VALID_PROBE_LETTER.strip('^$')}$"
+SAM_RIG_ID_MAJOR = "BEHDEV"
+NSB_RIG_ID_MAJOR = "BEHNSB"
+NP_RIG_ID_MAJOR = "NP"
+CLUSTER_RIG_INDEX = r"(?:[1-6]|UNKNOWN)"
+NSB_RIG_ID = rf"{NSB_RIG_ID_MAJOR}.(?:[AC-Z])-{CLUSTER_RIG_INDEX}"
+SAM_RIG_ID = rf"{SAM_RIG_ID_MAJOR}.B-{CLUSTER_RIG_INDEX}"
+NP_RIG_ID = rf"{NP_RIG_ID_MAJOR}.(?:[0-3])"
+VALID_RIG_ID = rf"^(({NSB_RIG_ID})|({SAM_RIG_ID})|({NP_RIG_ID}))$"
 
 
 def _strip_non_numeric(s: str) -> str:
@@ -307,12 +315,18 @@ def extract_rig_id_parts(s: str) -> tuple[str | None, str | None, str | None]:
     ('NP', '0', None)
     >>> extract_rig_id_parts("NP0")
     ('NP', '0', None)
-    >>> extract_rig_id_parts("NSB.D-1")
-    ('NSB', 'D', '1')
-    >>> extract_rig_id_parts("342_SAM.B-2_240401")
-    ('SAM', 'B', '2')
-    >>> extract_rig_id_parts("342_SAM.B-UNKNOWN_240401")
-    ('SAM', 'B', None)
+    >>> extract_rig_id_parts("BEHNSB.D-1")
+    ('BEHNSB', 'D', '1')
+    >>> extract_rig_id_parts("342_BEHDEV.B-2_240401")
+    ('BEHDEV', 'B', '2')
+    >>> extract_rig_id_parts("342_BEHDEV.B-UNKNOWN_240401")
+    ('BEHDEV', 'B', None)
+    >>> extract_rig_id_parts("UNKNOWN_BEHDEV.B-UNKNOWN")
+    ('BEHDEV', 'B', None)
+    >>> extract_rig_id_parts("unknown_BEHDEV.B-UNKNOWN")
+    ('BEHDEV', 'B', None)
+    >>> extract_rig_id_parts("unknown_BEHDEV.B-unknown")
+    ('BEHDEV', 'B', None)
     """
     match = re.match(
         PARSE_SUBSTANDARD_RIG_ID,
@@ -322,7 +336,7 @@ def extract_rig_id_parts(s: str) -> tuple[str | None, str | None, str | None]:
         raise ValueError(f"Could not extract rig name from {s}")
 
     computer_index = match.group("computer_index")
-    if match.group("computer_index") == "UNKNOWN":
+    if computer_index and computer_index.lower() == "unknown":
         computer_index = None
 
     return (

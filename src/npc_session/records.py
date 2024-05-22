@@ -563,38 +563,30 @@ class RigRecord(StrRecord):
     >>> RigRecord('NP0')
     'NP.0'
     >>> RigRecord('BEH.B')
-    'SAM.B-UNKNOWN'
+    'BEHDEV.B-UNKNOWN'
     >>> RigRecord('BEH.D-Box1')
-    'NSB.D-1'
+    'BEHNSB.D-1'
+
+    Validate invalid rig ids:
+    >>> RigRecord('BEH.D-Box7')
+    Traceback (most recent call last):
+    ...
+    ValueError: RigRecord.id must match ^((BEHNSB.(?:[AC-Z])-(?:[1-6]|UNKNOWN))|(BEHDEV.B-(?:[1-6]|UNKNOWN))|(NP.(?:[0-3])))$, not 'BEHNSB.D-7'
 
     Convert to `aind_data_schema.core.rig.Rig.rig_id`:
     >>> r = RigRecord('NSB.F-2')
-    >>> r.as_aind_data_schema_rig_id(datetime.date(2024, 4, 1))
-    '346_NSB.F-2_20240401'
+    >>> r.as_aind_data_schema_rig_id("346", datetime.date(2024, 4, 1))
+    '346_BEHNSB.F-2_20240401'
 
     Update the modification date of `aind_data_schema.core.rig.Rig.rig_id`:
     >>> rig_id = '346_SAM.B-UNKNOWN_20240401'
-    >>> RigRecord(rig_id).as_aind_data_schema_rig_id(datetime.date(2024, 4, 4))
-    '342_SAM.B-UNKNOWN_20240404'
+    >>> RigRecord(rig_id).as_aind_data_schema_rig_id("342", datetime.date(2024, 4, 4))
+    '342_BEHDEV.B-UNKNOWN_20240404'
     """
-    BEHAVIOR_CLUSTER_ROOM_NUMBERS = {
-        "B": "342",
-        "F": "346",
-        "G": "346",
-        "D": "347",
-        "E": "347",
-    }
+    valid_id_regex: ClassVar[str] = parsing.VALID_RIG_ID
+
     NEUROPIXELS_RIG_IDS_MAJOR = ("NP", )
-    NEUROPIXELS_RIG_ROOM_NUMBERS = {
-        "0": "325",
-        "1": "325",
-        "2": "327",
-        "3": "342",
-    }
-    SAM_RIG_ID_MAJOR = "SAM"
-    NSB_RIG_ID_MAJOR = "NSB"
     SAM_CLUSTERS = ("B", )
-    NSB_CLUSTERS = ("F", "D", "G", "E", )
     AIND_DATA_SCHEMA_RIG_ID_SEPARATOR = "_"
     AIND_DATA_SCHEMA_RIG_ID_MOD_DATE_FORMAT = "%Y%m%d"
 
@@ -605,39 +597,26 @@ class RigRecord(StrRecord):
         """
         id_major, id_minor, computer_index = parsing.extract_rig_id_parts(
             value)
-        if id_major in cls.NEUROPIXELS_RIG_IDS_MAJOR:
-            # only use computer_index for neuropixels rigs
-            if id_minor not in cls.NEUROPIXELS_RIG_ROOM_NUMBERS:
-                raise ValueError(
-                    f"Invalid id: {value}"
-                )
+        if id_major == parsing.NP_RIG_ID_MAJOR:
             return f"{id_major}.{id_minor}"
-        elif id_minor in cls.BEHAVIOR_CLUSTER_ROOM_NUMBERS:
+        else:
             # override id_major based on object cluster definitions
             if id_minor in cls.SAM_CLUSTERS:
-                id_major = cls.SAM_RIG_ID_MAJOR
-            elif id_minor in cls.NSB_CLUSTERS:
-                id_major = cls.NSB_RIG_ID_MAJOR
+                id_major = parsing.SAM_RIG_ID_MAJOR
             else:
-                raise NotImplementedError(
-                    f"Unsupported id: {value}"
-                )
+                id_major = parsing.NSB_RIG_ID_MAJOR
             if computer_index is None:
                 computer_index = "UNKNOWN"
             return f"{id_major}.{id_minor}-{computer_index}"
-        else:
-            raise ValueError(
-                f"Invalid id: {value}"
-            )
 
     @property
     def is_neuro_pixels_rig(self) -> bool:
-        return self.id.startswith(self.NEUROPIXELS_RIG_IDS_MAJOR)
+        return self.id.startswith(parsing.NP_RIG_ID_MAJOR)
 
     @property
     def is_behavior_cluster_rig(self) -> bool:
         return self.id.startswith(
-            (self.SAM_RIG_ID_MAJOR, self.NSB_RIG_ID_MAJOR))
+            (parsing.SAM_RIG_ID_MAJOR, parsing.NSB_RIG_ID_MAJOR))
 
     @property
     def id_minor(self) -> str:
@@ -650,20 +629,13 @@ class RigRecord(StrRecord):
 
         return None
 
-    @property
-    def room_number(self) -> str:
-        cluster_id = self.behavior_cluster_id
-        if cluster_id is not None:
-            return self.BEHAVIOR_CLUSTER_ROOM_NUMBERS[cluster_id]
-        else:
-            return self.NEUROPIXELS_RIG_ROOM_NUMBERS[self.id_minor]
-
     def as_aind_data_schema_rig_id(
         self,
+        room_number: str,
         modification_date: datetime.date,
     ) -> str:
         return self.AIND_DATA_SCHEMA_RIG_ID_SEPARATOR.join([
-            self.room_number,
+            room_number,
             self.id,
             modification_date.strftime(
                 self.AIND_DATA_SCHEMA_RIG_ID_MOD_DATE_FORMAT
