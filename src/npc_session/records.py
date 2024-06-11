@@ -587,6 +587,7 @@ class RigRecord(StrRecord):
     >>> RigRecord(rig_id).as_aind_data_schema_rig_id("342", datetime.date(2024, 4, 4))
     '342_BEHDEV.B-UNKNOWN_20240404'
     """
+
     valid_id_regex: ClassVar[str] = parsing.VALID_RIG_ID
 
     AIND_DATA_SCHEMA_RIG_ID_SEPARATOR = "_"
@@ -595,7 +596,7 @@ class RigRecord(StrRecord):
     @classmethod
     def parse_id(cls, value: Any) -> str:
         """Pre-validation. Handle any parsing or casting to get to the stored
-         type.
+        type.
         """
         return parsing.extract_rig_id(value)
 
@@ -605,8 +606,7 @@ class RigRecord(StrRecord):
 
     @property
     def is_behavior_cluster_rig(self) -> bool:
-        return self.id.startswith(
-            (parsing.SAM_RIG_ID_MAJOR, parsing.NSB_RIG_ID_MAJOR))
+        return self.id.startswith((parsing.SAM_RIG_ID_MAJOR, parsing.NSB_RIG_ID_MAJOR))
 
     @property
     def id_minor(self) -> str:
@@ -624,13 +624,15 @@ class RigRecord(StrRecord):
         room_number: str,
         modification_date: datetime.date,
     ) -> str:
-        return self.AIND_DATA_SCHEMA_RIG_ID_SEPARATOR.join([
-            room_number,
-            self.id,
-            modification_date.strftime(
-                self.AIND_DATA_SCHEMA_RIG_ID_MOD_DATE_FORMAT
-            ),
-        ])
+        return self.AIND_DATA_SCHEMA_RIG_ID_SEPARATOR.join(
+            [
+                room_number,
+                self.id,
+                modification_date.strftime(
+                    self.AIND_DATA_SCHEMA_RIG_ID_MOD_DATE_FORMAT
+                ),
+            ]
+        )
 
 
 if __name__ == "__main__":

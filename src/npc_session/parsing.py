@@ -51,7 +51,9 @@ RIG_ID_ROOM_NUMBER = r"(?P<room_number>[0-9]{1,3}|UNKNOWN|unknown)"  # range inc
 RIG_ID_MAJOR = r"(?P<id_major>[a-zA-Z]{2,6})"  # all current prefixes are 3 characters but this allows for future expansion
 RIG_ID_MINOR = r"(?P<id_minor>\w)"
 RIG_ID_COMPUTER_INDEX = r"(?P<computer_index>[0-9]|UNKNOWN|unknown)"
-RIG_ID_MODIFICATION_DATE = r"(?P<modification_date>[0-9]{6,8})"  # date can be in format YYMMDD or YYYYMMDD
+RIG_ID_MODIFICATION_DATE = (
+    r"(?P<modification_date>[0-9]{6,8})"  # date can be in format YYMMDD or YYYYMMDD
+)
 PARSE_SUBSTANDARD_RIG_ID = (
     rf"({RIG_ID_ROOM_NUMBER}[_])?{RIG_ID_MAJOR}?[.]?{RIG_ID_MINOR}[-]?(?:Box)?"
     rf"({RIG_ID_COMPUTER_INDEX})?([_]{RIG_ID_MODIFICATION_DATE})?"
@@ -340,8 +342,10 @@ def extract_rig_id(s: str) -> str:
         id_major = NSB_RIG_ID_MAJOR
 
     extracted_computer_index = match.group("computer_index")
-    if extracted_computer_index is None or \
-            extracted_computer_index.lower() == "unknown":
+    if (
+        extracted_computer_index is None
+        or extracted_computer_index.lower() == "unknown"
+    ):
         computer_index = "UNKNOWN"
     else:
         computer_index = extracted_computer_index
