@@ -541,6 +541,98 @@ class SessionRecord(StrRecord):
         return hash(self.id)
 
 
+class RigRecord(StrRecord):
+
+    """To uniquely define a rig we need:
+    - `id`: a multipart str corresponding to:
+
+        <id_major>.<id_minor>-<computer_index>
+
+        where:
+        - `NP`, `NSB`, `SAM` are the major id components
+        - `id_minor` is a number for `NP` rigs or a supported cluster letter
+        - `computer_index` and the preceeding `-` aren't used for `NP` rigs, if
+        missing for cluster rigs, it is set to `"UNKNOWN"`
+
+    Record provides:
+    - normalized id
+    - rig room number
+    - ability to format as `aind_data_schema.core.rig.Rig.rig_id`
+
+    Normalize ids:
+    >>> RigRecord('NP0')
+    'NP.0'
+    >>> RigRecord('BEH.B')
+    'BEHDEV.B-UNKNOWN'
+    >>> RigRecord('BEH.D-Box1')
+    'BEHNSB.D-1'
+
+    Validate invalid rig ids:
+    >>> RigRecord('BEH.D-Box7')
+    Traceback (most recent call last):
+    ...
+    ValueError: RigRecord.id must match ^((BEHNSB.(?:[AC-Z])-(?:[1-6]|UNKNOWN))|(BEHDEV.B-(?:[1-6]|UNKNOWN))|(NP.(?:[0-3])))$, not 'BEHNSB.D-7'
+
+    Convert to `aind_data_schema.core.rig.Rig.rig_id`:
+    >>> r = RigRecord('NSB.F-2')
+    >>> r.behavior_cluster_id
+    'F'
+    >>> r.is_behavior_cluster_rig
+    True
+    >>> r.as_aind_data_schema_rig_id("346", datetime.date(2024, 4, 1))
+    '346_BEHNSB.F-2_20240401'
+
+    Update the modification date of `aind_data_schema.core.rig.Rig.rig_id`:
+    >>> rig_id = '346_SAM.B-UNKNOWN_20240401'
+    >>> RigRecord(rig_id).as_aind_data_schema_rig_id("342", datetime.date(2024, 4, 4))
+    '342_BEHDEV.B-UNKNOWN_20240404'
+    """
+    valid_id_regex: ClassVar[str] = parsing.VALID_RIG_ID
+
+    AIND_DATA_SCHEMA_RIG_ID_SEPARATOR = "_"
+    AIND_DATA_SCHEMA_RIG_ID_MOD_DATE_FORMAT = "%Y%m%d"
+
+    @classmethod
+    def parse_id(cls, value: Any) -> str:
+        """Pre-validation. Handle any parsing or casting to get to the stored
+         type.
+        """
+        return parsing.extract_rig_id(value)
+
+    @property
+    def is_neuro_pixels_rig(self) -> bool:
+        return self.id.startswith(parsing.NP_RIG_ID_MAJOR)
+
+    @property
+    def is_behavior_cluster_rig(self) -> bool:
+        return self.id.startswith(
+            (parsing.SAM_RIG_ID_MAJOR, parsing.NSB_RIG_ID_MAJOR))
+
+    @property
+    def id_minor(self) -> str:
+        return self.id.split(".")[1]
+
+    @property
+    def behavior_cluster_id(self) -> str | None:
+        if self.is_behavior_cluster_rig:
+            return self.id.split(".")[1][0]
+
+        return None
+
+    def as_aind_data_schema_rig_id(
+        self,
+        room_number: str,
+        modification_date: datetime.date,
+    ) -> str:
+        return self.AIND_DATA_SCHEMA_RIG_ID_SEPARATOR.join([
+            room_number,
+            self.id,
+            modification_date.strftime(
+                self.AIND_DATA_SCHEMA_RIG_ID_MOD_DATE_FORMAT
+            ),
+        ])
+
+
 if __name__ == "__main__":
     import doctest
 

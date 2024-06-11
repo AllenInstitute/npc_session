@@ -47,6 +47,16 @@ PARSE_SESSION_INDEX = r"(?P<id>_[0-9]+)$"
 PARSE_SESSION_ID = rf"{PARSE_SUBJECT}[_ ]+{PARSE_DATE_OPTIONAL_TIME}[_ ]+({PARSE_SESSION_INDEX})?"  # does not allow time after date
 PARSE_AIND_SESSION_ID = rf"(?P<modality>[^\_]+)(?=\_)_{PARSE_SUBJECT}(?=\_)_{PARSE_DATE_AIND}(?=\_)_{PARSE_TIME_AIND}"
 
+RIG_ID_ROOM_NUMBER = r"(?P<room_number>[0-9]{1,3}|UNKNOWN|unknown)"  # range incase room number is less than 3 digits
+RIG_ID_MAJOR = r"(?P<id_major>[a-zA-Z]{2,6})"  # all current prefixes are 3 characters but this allows for future expansion
+RIG_ID_MINOR = r"(?P<id_minor>\w)"
+RIG_ID_COMPUTER_INDEX = r"(?P<computer_index>[0-9]|UNKNOWN|unknown)"
+RIG_ID_MODIFICATION_DATE = r"(?P<modification_date>[0-9]{6,8})"  # date can be in format YYMMDD or YYYYMMDD
+PARSE_SUBSTANDARD_RIG_ID = (
+    rf"({RIG_ID_ROOM_NUMBER}[_])?{RIG_ID_MAJOR}?[.]?{RIG_ID_MINOR}[-]?(?:Box)?"
+    rf"({RIG_ID_COMPUTER_INDEX})?([_]{RIG_ID_MODIFICATION_DATE})?"
+)
+
 VALID_DATE = rf"^{YEAR}-{MONTH}-{DAY}$"
 VALID_TIME = rf"^{HOUR}:{MINUTE}:{SECOND}$"
 VALID_DATETIME = rf"^{VALID_DATE.strip('^$')}\s{VALID_TIME.strip('^$')}$"
@@ -56,6 +66,15 @@ VALID_SESSION_ID = (
 )
 VALID_PROBE_LETTER = r"^(?P<letter>[A-F]{1})$"
 VALID_PROBE_NAME = rf"^probe{VALID_PROBE_LETTER.strip('^$')}$"
+SAM_RIG_ID_MAJOR = "BEHDEV"
+NSB_RIG_ID_MAJOR = "BEHNSB"
+NP_RIG_ID_MAJOR = "NP"
+SAM_CLUSTER_LETTER = "B"
+CLUSTER_RIG_INDEX = r"(?:[1-6]|UNKNOWN)"
+NSB_RIG_ID = rf"{NSB_RIG_ID_MAJOR}.(?:[AC-Z])-{CLUSTER_RIG_INDEX}"
+SAM_RIG_ID = rf"{SAM_RIG_ID_MAJOR}.{SAM_CLUSTER_LETTER}-{CLUSTER_RIG_INDEX}"
+NP_RIG_ID = rf"{NP_RIG_ID_MAJOR}.(?:[0-3])"
+VALID_RIG_ID = rf"^(({NSB_RIG_ID})|({SAM_RIG_ID})|({NP_RIG_ID}))$"
 
 
 def _strip_non_numeric(s: str) -> str:
@@ -267,6 +286,67 @@ def extract_mvr_camera_name(s: str) -> CameraName:
     with contextlib.suppress(StopIteration):
         return names[next(n for n in names if n in str(s).lower())]
     raise ValueError(f"Could not extract camera name from {s}")
+
+
+def extract_rig_id(s: str) -> str:
+    """Extracts a standardized rig id from a string.
+
+    More documentation on rig id parts at: `npc_session.records.RigIdRecord`
+
+    Notes
+    -----
+    - Parses amd extracts but does not validation, please refer to
+     `npc_session.records.RigIdRecord` for that.
+
+    Examples
+    --------
+    >>> extract_rig_id("BEH.D-Box2")
+    'BEHNSB.D-2'
+    >>> extract_rig_id("BEH.B")
+    'BEHDEV.B-UNKNOWN'
+    >>> extract_rig_id("D2")
+    'BEHNSB.D-2'
+    >>> extract_rig_id("NP.0")
+    'NP.0'
+    >>> extract_rig_id("NP0")
+    'NP.0'
+    >>> extract_rig_id("BEHNSB.D-1")
+    'BEHNSB.D-1'
+    >>> extract_rig_id("342_BEHDEV.B-2_240401")
+    'BEHDEV.B-2'
+    >>> extract_rig_id("342_BEHDEV.B-UNKNOWN_240401")
+    'BEHDEV.B-UNKNOWN'
+    >>> extract_rig_id("UNKNOWN_BEHDEV.B-UNKNOWN")
+    'BEHDEV.B-UNKNOWN'
+    >>> extract_rig_id("unknown_BEHDEV.B-UNKNOWN")
+    'BEHDEV.B-UNKNOWN'
+    >>> extract_rig_id("unknown_BEHDEV.B-unknown")
+    'BEHDEV.B-UNKNOWN'
+    """
+    match = re.match(
+        PARSE_SUBSTANDARD_RIG_ID,
+        s,
+    )
+    if not match:
+        raise ValueError(f"Could not extract rig id from {s}")
+
+    if match.group("id_major") == NP_RIG_ID_MAJOR:
+        return f"{NP_RIG_ID_MAJOR}.{match.group('id_minor')}"
+
+    id_minor = match.group("id_minor")
+    if id_minor == SAM_CLUSTER_LETTER:
+        id_major = SAM_RIG_ID_MAJOR
+    else:
+        id_major = NSB_RIG_ID_MAJOR
+
+    extracted_computer_index = match.group("computer_index")
+    if extracted_computer_index is None or \
+            extracted_computer_index.lower() == "unknown":
+        computer_index = "UNKNOWN"
+    else:
+        computer_index = extracted_computer_index
+
+    return f"{id_major}.{id_minor}-{computer_index}"
 
 
 if __name__ == "__main__":
