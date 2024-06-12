@@ -540,6 +540,139 @@ class SessionRecord(StrRecord):
         """
         return hash(self.id)
 
+class AINDSessionRecord(StrRecord):
+    """To uniquely define an AIND session we need:
+    - `id`: a multipart underscore-separated str corresponding to:
+
+        <platform>_<subject_id>_<date>_<time>
+
+        where:
+        - `platform` is text, with possible hyphens
+        - `subject_id` is a labtracks MID (digits)
+        - `date` is in format YYYY-MM-DD, with hyphen separators 
+        - `time` is in format HH:MM:SS, with hyphen separators
+        
+    Record provides:
+    - platform
+    - normalized id
+    - subject record
+    - datetime record
+    - idx (0 if not specified)
+
+    We can extract these components from typical session identifiers, such as
+    folder names, regardless of component order or presence of additional dates/times:
+    >>> a = AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35_sorted_2023-12-16_06-52-11')
+    >>> b = AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35')
+    >>> c = AINDSessionRecord('sorted_2023-12-16_06-52-11_ecephys_366122_2022-04-25_14-24-35_sorted_2023-12-16_06-52-11')
+    >>> c
+    'ecephys_366122_2022-04-25_14-24-35'
+    >>> a == b == c
+    True
+
+    Components are also available for use:
+    >>> a.platform, a.subject, a.date, a.time
+    ('ecephys', 366122, '2022-04-25', '14:24:35')
+    >>> a.date.year, a.date.month, a.date.day
+    (2022, 4, 25)
+    >>> a.time.hour, a.time.minute, a.time.second
+    (14, 24, 35)
+    
+    Subject and date are validated on init:
+    - subject must be a recent or near-future labtracks MID:
+    >>> AINDSessionRecord('1_2022-04-25')
+    Traceback (most recent call last):
+    ...
+    ValueError: AINDSessionRecord.id must be in format <subject_id>_<date>_<idx [optional]>
+
+    - date must be a valid recent or near-future date:
+    >>> AINDSessionRecord('366122_2022-13-25')
+    Traceback (most recent call last):
+    ...
+    ValueError: AINDSessionRecord.id must be in format <platform>_<subject_id>_<date>_<time>
+
+    Comparisons are based on the session's normalized id:
+    >>> assert AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35') == AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35')
+    >>> assert AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35') == AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35_sorted_2023-12-16_06-52-11')
+    >>> assert AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35') == 'ecephys_366122_2022-04-25_14-24-35'
+
+
+    Validator can also be used to check if a string is a valid session id:
+    >>> AINDSessionRecord.validate_id('ecephys_366122_2022-04-25_14-24-35') == None
+    True
+    >>> AINDSessionRecord.validate_id('366122_2022-04-25_14-24-35') == None
+    Traceback (most recent call last):
+    ...
+    ValueError: AINDSessionRecord.id must match AINDSessionRecord.valid_id_regex
+
+    >>> a = AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35')
+    >>> assert a[:] in a.id, f"slicing should access {a.id[:]=} , not the original value passed to init {a[:]=}"
+
+    # hashes match string 
+    >>> assert 'ecephys_366122_2022-04-25_14-24-35' in {AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35')}
+    """
+    id: str
+
+    valid_id_regex: ClassVar = parsing.VALID_AIND_SESSION_ID
+
+    @classmethod
+    def parse_id(cls, value: Any) -> str:
+        value = parsing.extract_aind_session_id(str(value))
+        split = value.split("_")
+        if len(split) < 3:
+            value = f"{value}_0"
+        return str(super().parse_id(value))
+
+    @property
+    def platform(self) -> str:
+        return self.id.split("_")[0]
+
+    @property
+    def subject(self) -> SubjectRecord:
+        return SubjectRecord(self.id.split("_")[1])
+
+    @property
+    def date(self) -> DateRecord:
+        return DateRecord(self.id.split("_")[2])
+
+    @property
+    def time(self) -> TimeRecord:
+        return TimeRecord(self.id.split("_")[3])
+    
+    @property
+    def dt(self) -> datetime.datetime:
+        return datetime.datetime.fromisoformat(" ".join(self.id.split("_")[2:4]))
+    
+    def __str__(self) -> str:
+        return self.id
+
+    def __repr__(self) -> str:
+        return repr(str(self))
+
+    def __eq__(self, other: Any) -> bool:
+        """
+        >>> assert AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35') == AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35')
+        >>> assert AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35') == AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35_sorted_2023-12-16_06-52-11')
+        >>> assert AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35') == 'ecephys_366122_2022-04-25_14-24-35'
+
+        >>> assert AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35') != 'ecephys_366122_2022-04-25_14-24-34'
+
+        Comparison possible with stringable types:
+        >>> assert AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35') == MetadataRecord('ecephys_366122_2022-04-25_14-24-35')
+        """
+        if not isinstance(other, self.__class__):
+            try:
+                return self == AINDSessionRecord(str(other))
+            except (ValueError, TypeError):
+                return False
+        return super().__eq__(other)
+
+    def __hash__(self) -> int:
+        """
+        >>> assert AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35') in {AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35')}
+        >>> assert 'ecephys_366122_2022-04-25_14-24-35' in {AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35')}
+        >>> assert AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35') in {'ecephys_366122_2022-04-25_14-24-35'}
+        """
+        return hash(self.id)
 
 class RigRecord(StrRecord):
 
