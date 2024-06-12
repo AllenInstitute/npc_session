@@ -564,14 +564,14 @@ class AINDSessionRecord(StrRecord):
     >>> a = AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35_sorted_2023-12-16_06-52-11')
     >>> b = AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35')
     >>> c = AINDSessionRecord('sorted_2023-12-16_06-52-11_ecephys_366122_2022-04-25_14-24-35_sorted_2023-12-16_06-52-11')
-    >>> a
+    >>> c
     'ecephys_366122_2022-04-25_14-24-35'
     >>> a == b == c
     True
 
     Components are also available for use:
-    >>> a.subject, a.date, a.time
-    (366122, '2022-04-25', '14:24:35')
+    >>> a.platform, a.subject, a.date, a.time
+    ('ecephys', 366122, '2022-04-25', '14:24:35')
     >>> a.date.year, a.date.month, a.date.day
     (2022, 4, 25)
     >>> a.time.hour, a.time.minute, a.time.second
@@ -621,6 +621,10 @@ class AINDSessionRecord(StrRecord):
         if len(split) < 3:
             value = f"{value}_0"
         return str(super().parse_id(value))
+
+    @property
+    def platform(self) -> str:
+        return self.id.split("_")[0]
 
     @property
     def subject(self) -> SubjectRecord:
