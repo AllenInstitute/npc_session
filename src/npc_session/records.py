@@ -540,6 +540,7 @@ class SessionRecord(StrRecord):
         """
         return hash(self.id)
 
+
 class AINDSessionRecord(StrRecord):
     """To uniquely define an AIND session we need:
     - `id`: a multipart underscore-separated str corresponding to:
@@ -549,9 +550,9 @@ class AINDSessionRecord(StrRecord):
         where:
         - `platform` is text, with possible hyphens
         - `subject_id` is a labtracks MID (digits)
-        - `date` is in format YYYY-MM-DD, with hyphen separators 
+        - `date` is in format YYYY-MM-DD, with hyphen separators
         - `time` is in format HH:MM:SS, with hyphen separators
-        
+
     Record provides:
     - platform
     - normalized id
@@ -576,7 +577,7 @@ class AINDSessionRecord(StrRecord):
     (2022, 4, 25)
     >>> a.time.hour, a.time.minute, a.time.second
     (14, 24, 35)
-    
+
     Subject and date are validated on init:
     - subject must be a recent or near-future labtracks MID:
     >>> AINDSessionRecord('1_2022-04-25')
@@ -607,9 +608,10 @@ class AINDSessionRecord(StrRecord):
     >>> a = AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35')
     >>> assert a[:] in a.id, f"slicing should access {a.id[:]=} , not the original value passed to init {a[:]=}"
 
-    # hashes match string 
+    # hashes match string
     >>> assert 'ecephys_366122_2022-04-25_14-24-35' in {AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35')}
     """
+
     id: str
 
     valid_id_regex: ClassVar = parsing.VALID_AIND_SESSION_ID
@@ -637,11 +639,11 @@ class AINDSessionRecord(StrRecord):
     @property
     def time(self) -> TimeRecord:
         return TimeRecord(self.id.split("_")[3])
-    
+
     @property
     def dt(self) -> datetime.datetime:
         return datetime.datetime.fromisoformat(" ".join(self.id.split("_")[2:4]))
-    
+
     def __str__(self) -> str:
         return self.id
 
@@ -673,6 +675,7 @@ class AINDSessionRecord(StrRecord):
         >>> assert AINDSessionRecord('ecephys_366122_2022-04-25_14-24-35') in {'ecephys_366122_2022-04-25_14-24-35'}
         """
         return hash(self.id)
+
 
 class RigRecord(StrRecord):
 
