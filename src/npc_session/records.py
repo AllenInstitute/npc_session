@@ -558,7 +558,6 @@ class AINDSessionRecord(StrRecord):
     - normalized id
     - subject record
     - datetime record
-    - idx (0 if not specified)
 
     We can extract these components from typical session identifiers, such as
     folder names, regardless of component order or presence of additional dates/times:
@@ -577,7 +576,9 @@ class AINDSessionRecord(StrRecord):
     (2022, 4, 25)
     >>> a.time.hour, a.time.minute, a.time.second
     (14, 24, 35)
-
+    >>> a.dt
+    datetime.datetime(2022, 4, 25, 14, 24, 35)
+    
     Subject and date are validated on init:
     - subject must be a recent or near-future labtracks MID:
     >>> AINDSessionRecord('1_2022-04-25')
@@ -642,8 +643,8 @@ class AINDSessionRecord(StrRecord):
 
     @property
     def dt(self) -> datetime.datetime:
-        return datetime.datetime.fromisoformat(" ".join(self.id.split("_")[2:4]))
-
+        return datetime.datetime.fromisoformat(f"{self.date}T{self.time}")
+    
     def __str__(self) -> str:
         return self.id
 
