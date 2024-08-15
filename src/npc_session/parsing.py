@@ -43,7 +43,7 @@ SUBJECT = r"(?P<subject>[0-9]{6,7})"
 PARSE_SUBJECT = rf"(?<![0-9]){SUBJECT}(?![0-9])"
 PARSE_SESSION_INDEX = r"(?P<id>_[0-9]+)$"
 PARSE_SESSION_ID = rf"{PARSE_SUBJECT}[_ ]+{PARSE_DATE_OPTIONAL_TIME}[_ ]+({PARSE_SESSION_INDEX})?"  # does not allow time after date
-PARSE_AIND_SESSION_ID = rf"(?P<modality>[^\_]+)(?=\_)_{PARSE_SUBJECT}(?=\_)_{PARSE_DATE_AIND}(?=\_)_{PARSE_TIME_AIND}"
+PARSE_AIND_SESSION_ID = rf"(?P<modality>[^\\\/\_]+)(?=\_)_{PARSE_SUBJECT}(?=\_)_{PARSE_DATE_AIND}(?=\_)_{PARSE_TIME_AIND}"
 
 RIG_ID_ROOM_NUMBER = r"(?P<room_number>[0-9]{1,3}|UNKNOWN|unknown)"  # range incase room number is less than 3 digits
 RIG_ID_MAJOR = r"(?P<id_major>[a-zA-Z]{2,6})"  # all current prefixes are 3 characters but this allows for future expansion
@@ -252,6 +252,10 @@ def extract_aind_session_id(s: str) -> str:
     >>> extract_aind_session_id('prefix_ecephys_366122_2021-06-01_10-12-03_sorted')
     'ecephys_366122_2021-06-01_10-12-03'
     >>> extract_aind_session_id('ecephys_686740_2023_10_26_12_29_08_to_dlc_side')
+    'ecephys_686740_2023-10-26_12-29-08'
+    >>> extract_aind_session_id('data/ecephys_686740_2023_10_26_12_29_08_to_dlc_side')
+    'ecephys_686740_2023-10-26_12-29-08'
+    >>> extract_aind_session_id('data\\ecephys_686740_2023_10_26_12_29_08_to_dlc_side')
     'ecephys_686740_2023-10-26_12-29-08'
     >>> extract_aind_session_id('366122_2021-06-01_10-12-03_sorted')
     Traceback (most recent call last):
