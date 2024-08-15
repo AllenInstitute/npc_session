@@ -43,7 +43,7 @@ SUBJECT = r"(?P<subject>[0-9]{6,7})"
 PARSE_SUBJECT = rf"(?<![0-9]){SUBJECT}(?![0-9])"
 PARSE_SESSION_INDEX = r"(?P<id>_[0-9]+)$"
 PARSE_SESSION_ID = rf"{PARSE_SUBJECT}[_ ]+{PARSE_DATE_OPTIONAL_TIME}[_ ]+({PARSE_SESSION_INDEX})?"  # does not allow time after date
-PARSE_AIND_SESSION_ID = rf"(?P<modality>[^\\\/\_]+)(?=\_)_{PARSE_SUBJECT}(?=\_)_{PARSE_DATE_AIND}(?=\_)_{PARSE_TIME_AIND}"
+PARSE_AIND_SESSION_ID = rf"(?P<platform>[^\\\/\_]+)(?=\_)_{PARSE_SUBJECT}(?=\_)_{PARSE_DATE_AIND}(?=\_)_{PARSE_TIME_AIND}"
 
 RIG_ID_ROOM_NUMBER = r"(?P<room_number>[0-9]{1,3}|UNKNOWN|unknown)"  # range incase room number is less than 3 digits
 RIG_ID_MAJOR = r"(?P<id_major>[a-zA-Z]{2,6})"  # all current prefixes are 3 characters but this allows for future expansion
@@ -265,7 +265,7 @@ def extract_aind_session_id(s: str) -> str:
     match = re.search(PARSE_AIND_SESSION_ID, s)
     if not match:
         raise ValueError(f"Could not extract AIND session ID from {s}")
-    return f"{match.group('modality')}_{match.group('subject')}_{match.group('year')}-{match.group('month')}-{match.group('day')}_{match.group('hour')}-{match.group('minute')}-{match.group('second')}"
+    return f"{match.group('platform')}_{match.group('subject')}_{match.group('year')}-{match.group('month')}-{match.group('day')}_{match.group('hour')}-{match.group('minute')}-{match.group('second')}"
 
 
 def extract_mvr_camera_name(s: str) -> CameraName:
