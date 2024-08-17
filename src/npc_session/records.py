@@ -289,6 +289,10 @@ class DatetimeRecord(DateRecord):
     Components of datetime are also made available:
     >>> dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second
     (2022, 4, 25, 15, 2, 37)
+    
+    If a date alone is provided, the time will default to 00:00:00:
+    >>> DatetimeRecord('2022-04-25')
+    '2022-04-25 00:00:00'
     """
 
     valid_id_regex: ClassVar[str] = parsing.VALID_DATETIME
@@ -301,7 +305,11 @@ class DatetimeRecord(DateRecord):
     @classmethod
     def parse_id(cls, value: int | str | datetime.datetime) -> str:
         date = super().parse_id(value)
-        time = parsing.extract_isoformat_time(str(value))
+        datetime = parsing.extract_isoformat_datetime(str(value))
+        if datetime is None:
+            time = "00:00:00"
+        else:
+            time = datetime.split(" ")[1]
         return f"{date} {time}"
 
     def __getattribute__(self, __name: str) -> Any:
