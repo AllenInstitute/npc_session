@@ -586,7 +586,9 @@ class AINDSessionRecord(StrRecord):
     (14, 24, 35)
     >>> a.dt
     datetime.datetime(2022, 4, 25, 14, 24, 35)
-
+    >>> a.datetime
+    '2022-04-25 14:24:35'
+    
     Subject and date are validated on init:
     - subject must be a recent or near-future labtracks MID:
     >>> AINDSessionRecord('1_2022-04-25')
@@ -652,7 +654,11 @@ class AINDSessionRecord(StrRecord):
     @property
     def dt(self) -> datetime.datetime:
         return datetime.datetime.fromisoformat(f"{self.date}T{self.time}")
-
+    
+    @property
+    def datetime(self) -> DatetimeRecord:
+        return DatetimeRecord(f"{self.date} {self.time}")
+    
     def __str__(self) -> str:
         return self.id
 
