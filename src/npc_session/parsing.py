@@ -165,11 +165,21 @@ def extract_isoformat_time(s: str) -> str | None:
     '10:12:03'
     >>> extract_isoformat_time('101203')
     '10:12:03'
-    >>> extract_isoformat_time('20209900_251203') == None
-    True
+    
+    Incomplete time should not be matched:
+    >>> assert extract_isoformat_time('ecephys_626791_2022-08-15_00-00_dlc_eye') is None
+    
+    Invalid time should not be matched:
+    >>> assert extract_isoformat_time('20209900_251203') is None
+    
     """
     # matching datetime is more reliable than time alone:
     match = re.search(PARSE_DATETIME, str(s))
+    if not match:
+        date = re.search(PARSE_DATE, str(s))
+        if date:
+            # remove date to narrow down search
+            s = re.sub(PARSE_DATE, "", s)
     if not match:
         match = re.search(PARSE_TIME, str(s))
     if not match:
