@@ -11,7 +11,7 @@ from typing import Literal
 
 from typing_extensions import TypeAlias
 
-CameraName: TypeAlias = Literal["eye", "face", "behavior"]
+CameraName: TypeAlias = Literal["eye", "face", "behavior", "nose"]
 
 PARSE_PROBE_LETTER = r"(?<=[pP{1}]robe)[-_\s]*(?P<letter>[A-F]{1})(?![a-zA-Z])"
 
