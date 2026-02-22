@@ -297,6 +297,7 @@ def extract_mvr_camera_name(s: str) -> CameraName:
         "eye": "eye",
         "face": "face",
         "beh": "behavior",
+        "nose": "nose",
     }
     with contextlib.suppress(StopIteration):
         return names[next(n for n in names if n in str(s).lower())]
